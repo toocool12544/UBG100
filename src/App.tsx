@@ -18,6 +18,7 @@ import { CameraApp } from './apps/CameraApp';
 import { CalendarApp } from './apps/CalendarApp';
 import { ThemesApp } from './apps/ThemesApp';
 import { SettingsApp } from './apps/SettingsApp';
+import { ForDadApp } from './apps/ForDadApp';
 import { RetroApp } from './apps/RetroApp';
 import { ClipsApp } from './apps/ClipsApp';
 import { GlobalChatApp } from './apps/GlobalChatApp';
@@ -201,6 +202,8 @@ export default function App() {
             onLockScreen={() => setIsLocked(true)}
           />
         );
+      case 'for-dad':
+        return <ForDadApp />;
       case 'retro':
         return <RetroApp />;
       case 'clips':

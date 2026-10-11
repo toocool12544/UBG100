@@ -348,6 +348,108 @@ class SoundEngine {
       isPlaying: () => isPlaying,
     };
   }
+
+  // Procedural monkey sounds
+  playMonkeyWhoop() {
+    const ctx = this.getContext();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+
+    for (let i = 0; i < 3; i++) {
+      const startTime = now + i * 0.18;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const filter = ctx.createBiquadFilter();
+
+      osc.type = 'sawtooth';
+      filter.type = 'bandpass';
+      filter.frequency.setValueAtTime(600, startTime);
+      filter.Q.setValueAtTime(4.0, startTime);
+
+      osc.frequency.setValueAtTime(260 + i * 30, startTime);
+      osc.frequency.exponentialRampToValueAtTime(580 + i * 40, startTime + 0.08);
+      osc.frequency.exponentialRampToValueAtTime(320, startTime + 0.16);
+
+      gain.gain.setValueAtTime(0.001, startTime);
+      gain.gain.linearRampToValueAtTime(0.25, startTime + 0.05);
+      gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.17);
+
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(startTime);
+      osc.stop(startTime + 0.18);
+    }
+  }
+
+  playMonkeyScreech() {
+    const ctx = this.getContext();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+
+    for (let i = 0; i < 4; i++) {
+      const startTime = now + i * 0.12;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const filter = ctx.createBiquadFilter();
+
+      osc.type = 'triangle';
+      filter.type = 'bandpass';
+      filter.frequency.setValueAtTime(1400, startTime);
+      filter.Q.setValueAtTime(5.0, startTime);
+
+      const baseFreq = 950 + (i % 2 === 0 ? 300 : 0);
+      osc.frequency.setValueAtTime(baseFreq, startTime);
+      osc.frequency.linearRampToValueAtTime(baseFreq * 1.5, startTime + 0.05);
+      osc.frequency.linearRampToValueAtTime(baseFreq * 0.8, startTime + 0.11);
+
+      gain.gain.setValueAtTime(0.01, startTime);
+      gain.gain.linearRampToValueAtTime(0.3, startTime + 0.03);
+      gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.11);
+
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(startTime);
+      osc.stop(startTime + 0.12);
+    }
+  }
+
+  createMonkeyLoop() {
+    let isPlaying = false;
+    let timerId: number | null = null;
+    let cycle = 0;
+
+    const playCycle = () => {
+      if (!isPlaying) return;
+      if (cycle % 2 === 0) {
+        this.playMonkeyWhoop();
+      } else {
+        this.playMonkeyScreech();
+      }
+      cycle++;
+      timerId = window.setTimeout(playCycle, 850);
+    };
+
+    return {
+      start: () => {
+        if (isPlaying) return;
+        isPlaying = true;
+        cycle = 0;
+        playCycle();
+      },
+      stop: () => {
+        isPlaying = false;
+        if (timerId !== null) {
+          clearTimeout(timerId);
+          timerId = null;
+        }
+      },
+      isPlaying: () => isPlaying,
+    };
+  }
 }
 
 export const sound = new SoundEngine();

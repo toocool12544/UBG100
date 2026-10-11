@@ -126,7 +126,7 @@ export const TerminalApp: React.FC = () => {
       newHistory.push({ text: 'aurora-guest (UID: 1234, GID: 1234, groups: gamers, unblocked)', type: 'output' });
     } else if (lower === 'games') {
       newHistory.push({
-        text: '28 Apps: Games, Cinera, MP3 Player, JS Executor, Suggestions, Camera, Calendar, Themes, Settings, Retro, Clips, Global Chat, Links, Roblox, Terminal, Soundboard, Movies, TikTok, Paint, Inbox, Meet, Calculator, Celeste, Anime, Music, Notepad, Voice, Clock',
+        text: '29 Apps: Games, Cinera, MP3 Player, JS Executor, Suggestions, Camera, Calendar, Themes, Settings, For Dad, Retro, Clips, Global Chat, Links, Roblox, Terminal, Soundboard, Movies, TikTok, Paint, Inbox, Meet, Calculator, Celeste, Anime, Music, Notepad, Voice, Clock',
         type: 'output',
       });
     } else {

@@ -357,6 +357,13 @@ export const AppIcon: React.FC<AppIconProps> = ({ app, onClick, isOpen = false }
           </div>
         );
 
+      case 'monkey':
+        return (
+          <div className="w-full h-full flex items-center justify-center text-3xl filter drop-shadow select-none">
+            🐒
+          </div>
+        );
+
       default:
         return (
           <div className="w-full h-full flex items-center justify-center text-white font-bold text-lg">
