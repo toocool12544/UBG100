@@ -1,171 +1,218 @@
 import React, { useState } from 'react';
-import { Film, Play, Star, Clock, Info, Search, Sparkles } from 'lucide-react';
+import { Film, Play, ExternalLink, Plus, Trash2, Video } from 'lucide-react';
+import { sound } from '../utils/soundEffects';
 
 interface MovieItem {
   id: string;
   title: string;
-  year: string;
   genre: string;
-  rating: string;
-  duration: string;
-  description: string;
-  badge: string;
-  trailerId: string;
+  url: string;
 }
 
-const CINEMA_CATALOG: MovieItem[] = [
-  {
-    id: 'cyber-2099',
-    title: 'Neon Odyssey 2099',
-    year: '2026',
-    genre: 'Sci-Fi / Cyberpunk',
-    rating: '9.4',
-    duration: '2h 15m',
-    description: 'In a rain-slicked mega-city powered by aurora reactors, an unblocked hacker uncovers a system anomaly that threatens reality.',
-    badge: 'Trending Now',
-    trailerId: 'dQw4w9WgXcQ',
-  },
-  {
-    id: 'speed-runner',
-    title: 'Sub-Pixel: The World Record',
-    year: '2025',
-    genre: 'Documentary / Gaming',
-    rating: '9.8',
-    duration: '1h 48m',
-    description: 'The definitive history of speedrunners finding game-breaking glitches to beat legendary platformers in milliseconds.',
-    badge: 'Staff Pick',
-    trailerId: 'dQw4w9WgXcQ',
-  },
-  {
-    id: 'celeste-summit',
-    title: 'Summit of the Mountain',
-    year: '2024',
-    genre: 'Adventure / Animation',
-    rating: '9.6',
-    duration: '1h 52m',
-    description: 'An introspective ascent through hazardous frozen ruins, fraught with dangerous winds and inner phantoms.',
-    badge: 'Top Rated',
-    trailerId: 'dQw4w9WgXcQ',
-  },
-  {
-    id: 'retro-arcade',
-    title: 'Insert Coin: 1984',
-    year: '2023',
-    genre: 'Retro / Thriller',
-    rating: '9.1',
-    duration: '2h 04m',
-    description: 'A mysterious neon arcade cabinet appears at a local mall that never runs out of quarters—and traps players in its 8-bit universe.',
-    badge: 'Cult Classic',
-    trailerId: 'dQw4w9WgXcQ',
-  },
-];
-
 export const CineraApp: React.FC = () => {
-  const [selectedMovie, setSelectedMovie] = useState<MovieItem>(CINEMA_CATALOG[0]);
-  const [isPlaying, setIsPlaying] = useState<boolean>(false);
-  const [filter, setFilter] = useState<string>('All');
+  const [catalog, setCatalog] = useState<MovieItem[]>([]);
+  const [activeStreamUrl, setActiveStreamUrl] = useState<string>('');
+  const [activeTitle, setActiveTitle] = useState<string>('');
+  const [streamInput, setStreamInput] = useState<string>('');
+  const [titleInput, setTitleInput] = useState<string>('');
+  const [showAddForm, setShowAddForm] = useState<boolean>(false);
+
+  const handlePlayDirect = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!streamInput.trim()) return;
+    sound.playSoundEffect('levelup');
+    setActiveStreamUrl(streamInput.trim());
+    setActiveTitle(titleInput.trim() || 'Custom Stream');
+  };
+
+  const handleSaveToCatalog = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!streamInput.trim()) return;
+
+    sound.playSoundEffect('levelup');
+    const newEntry: MovieItem = {
+      id: Date.now().toString(),
+      title: titleInput.trim() || 'Custom Stream',
+      genre: 'Web Video',
+      url: streamInput.trim(),
+    };
+
+    setCatalog((prev) => [...prev, newEntry]);
+    setActiveStreamUrl(streamInput.trim());
+    setActiveTitle(titleInput.trim() || 'Custom Stream');
+    setStreamInput('');
+    setTitleInput('');
+    setShowAddForm(false);
+  };
+
+  const handleRemove = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    sound.playKeypadClick(400);
+    setCatalog((prev) => prev.filter((item) => item.id !== id));
+    if (catalog.find((item) => item.id === id)?.url === activeStreamUrl) {
+      setActiveStreamUrl('');
+      setActiveTitle('');
+    }
+  };
 
   return (
-    <div className="flex flex-col h-full text-slate-100">
-      {/* Hero Featured Header */}
-      <div className="relative rounded-2xl overflow-hidden p-6 sm:p-8 bg-gradient-to-r from-slate-950 via-slate-900 to-rose-950/60 border border-white/10 mb-6 shadow-2xl">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-rose-600/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="relative z-10 max-w-xl">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500/20 text-rose-300 text-xs font-semibold mb-3 border border-rose-500/30">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>{selectedMovie.badge}</span>
-          </div>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight mb-2">
-            {selectedMovie.title}
+    <div className="flex flex-col h-full text-slate-100 max-w-5xl mx-auto p-4 overflow-y-auto">
+      {/* Top Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 mb-4 border-b border-white/10">
+        <div>
+          <h2 className="text-xl sm:text-2xl font-black text-rose-400 flex items-center gap-2">
+            <Film className="w-6 h-6 text-rose-500" />
+            <span>Cinera Cinema</span>
           </h2>
-          <div className="flex items-center gap-3 text-xs text-slate-400 mb-3">
-            <span className="flex items-center gap-1 text-amber-400 font-bold">
-              <Star className="w-3.5 h-3.5 fill-current" /> {selectedMovie.rating}
-            </span>
-            <span>·</span>
-            <span>{selectedMovie.year}</span>
-            <span>·</span>
-            <span>{selectedMovie.duration}</span>
-            <span>·</span>
-            <span>{selectedMovie.genre}</span>
-          </div>
-          <p className="text-xs sm:text-sm text-slate-300 line-clamp-3 mb-5 leading-relaxed">
-            {selectedMovie.description}
+          <p className="text-xs text-slate-400 mt-0.5">
+            All default titles have been removed. Load or stream any video URL directly.
           </p>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setIsPlaying(true)}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs sm:text-sm shadow-lg shadow-rose-500/30 transition-all cursor-pointer active:scale-95"
-            >
-              <Play className="w-4 h-4 fill-current" />
-              <span>Watch Stream</span>
-            </button>
-            <button
-              onClick={() => alert(`Saved ${selectedMovie.title} to watchlist`)}
-              className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-slate-200 text-xs sm:text-sm font-semibold transition-all cursor-pointer"
-            >
-              + Watchlist
-            </button>
-          </div>
         </div>
+
+        <button
+          onClick={() => setShowAddForm(!showAddForm)}
+          className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-rose-500 hover:bg-rose-400 text-white font-bold text-xs cursor-pointer shadow-md w-fit"
+        >
+          <Plus className="w-4 h-4" />
+          <span>Add Video Stream</span>
+        </button>
       </div>
 
-      {/* Video Player Modal */}
-      {isPlaying && (
-        <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-xl flex flex-col items-center justify-center p-4">
-          <div className="w-full max-w-4xl bg-slate-900 rounded-2xl overflow-hidden border border-white/20 shadow-2xl flex flex-col">
-            <div className="p-3 bg-slate-950 flex justify-between items-center border-b border-white/10">
-              <span className="font-bold text-sm text-white flex items-center gap-2">
-                <Film className="w-4 h-4 text-rose-500" />
-                {selectedMovie.title} — Streaming Player
-              </span>
+      {/* Add Custom Stream Form */}
+      {showAddForm && (
+        <form
+          onSubmit={handleSaveToCatalog}
+          className="p-4 mb-4 rounded-2xl bg-rose-950/40 border border-rose-500/30 flex flex-col sm:flex-row gap-3 items-center"
+        >
+          <input
+            type="text"
+            placeholder="Title (e.g. Action Stream)"
+            value={titleInput}
+            onChange={(e) => setTitleInput(e.target.value)}
+            className="w-full sm:w-1/3 px-3 py-2 rounded-xl bg-black/40 border border-white/20 text-xs text-white focus:outline-none focus:border-rose-400"
+          />
+          <input
+            type="url"
+            placeholder="Stream or Embed URL (https://...)"
+            value={streamInput}
+            onChange={(e) => setStreamInput(e.target.value)}
+            className="w-full sm:flex-1 px-3 py-2 rounded-xl bg-black/40 border border-white/20 text-xs text-white focus:outline-none focus:border-rose-400"
+          />
+          <div className="flex gap-2 w-full sm:w-auto justify-end">
+            <button
+              type="submit"
+              className="px-4 py-2 rounded-xl bg-rose-500 hover:bg-rose-600 font-bold text-xs text-white cursor-pointer"
+            >
+              Save & Play
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowAddForm(false)}
+              className="px-3 py-2 text-xs text-slate-400 hover:text-white"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      )}
+
+      {/* Active Video Player Screen */}
+      {activeStreamUrl ? (
+        <div className="flex-1 flex flex-col gap-2 mb-6">
+          <div className="flex items-center justify-between px-3 py-2 bg-slate-900 rounded-xl text-xs text-slate-300 border border-white/10">
+            <span className="font-bold text-white flex items-center gap-2">
+              <Film className="w-4 h-4 text-rose-400" />
+              {activeTitle}
+            </span>
+            <div className="flex items-center gap-2">
+              <a
+                href={activeStreamUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="hover:text-white flex items-center gap-1 text-slate-400"
+              >
+                <ExternalLink className="w-3.5 h-3.5" />
+                <span>Open in Tab</span>
+              </a>
               <button
-                onClick={() => setIsPlaying(false)}
-                className="text-slate-400 hover:text-white text-sm px-3 py-1 rounded bg-white/10 cursor-pointer"
+                onClick={() => {
+                  setActiveStreamUrl('');
+                  setActiveTitle('');
+                }}
+                className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-white font-semibold cursor-pointer"
               >
                 Close Player
               </button>
             </div>
-            <div className="relative aspect-video bg-black flex flex-col items-center justify-center text-center p-6">
-              <div className="w-20 h-20 rounded-full bg-rose-500/20 border-2 border-rose-500 flex items-center justify-center mb-4 animate-pulse">
-                <Play className="w-8 h-8 text-rose-400 ml-1 fill-current" />
-              </div>
-              <h4 className="text-xl font-bold text-white mb-2">Cinera Aurora High-Speed Stream</h4>
-              <p className="text-xs text-slate-400 max-w-md">
-                Stream buffer initialized. Unblocked fast CDN active with 0 buffering lag. Enjoy the show!
-              </p>
-            </div>
+          </div>
+          <div className="w-full h-[480px] rounded-2xl border border-white/15 overflow-hidden shadow-2xl bg-black">
+            <iframe
+              src={activeStreamUrl}
+              className="w-full h-full border-none"
+              title={activeTitle}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
           </div>
         </div>
-      )}
-
-      {/* Film Catalog Cards */}
-      <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400 mb-3 px-1">
-        Featured Releases & Cinema
-      </h3>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-        {CINEMA_CATALOG.map((m) => (
-          <div
-            key={m.id}
-            onClick={() => setSelectedMovie(m)}
-            className={`p-4 rounded-xl border transition-all cursor-pointer ${
-              selectedMovie.id === m.id
-                ? 'bg-rose-500/15 border-rose-500/50 shadow-lg shadow-rose-500/10'
-                : 'bg-white/5 hover:bg-white/10 border-white/10'
-            }`}
-          >
-            <div className="flex justify-between items-start mb-2">
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-white/10 text-rose-300">
-                {m.genre.split('/')[0]}
-              </span>
-              <span className="text-xs font-mono font-bold text-amber-400">★ {m.rating}</span>
-            </div>
-            <h4 className="font-bold text-sm text-white mb-1">{m.title}</h4>
-            <p className="text-[11px] text-slate-400 line-clamp-2 mb-2">{m.description}</p>
-            <div className="text-[10px] text-slate-500">{m.duration} • {m.year}</div>
+      ) : catalog.length === 0 ? (
+        /* Empty State */
+        <div className="flex-1 flex flex-col items-center justify-center p-8 text-center rounded-2xl bg-white/5 border border-dashed border-white/10 my-auto">
+          <div className="w-16 h-16 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-3xl mb-4">
+            <Video className="w-8 h-8 text-rose-400/50" />
           </div>
-        ))}
-      </div>
+          <h3 className="text-base font-bold text-white mb-1">No Movies or Streams in Cinera</h3>
+          <p className="text-xs text-slate-400 max-w-sm mb-6">
+            All default cineras have been removed. You can stream or embed any video URL directly using the form below.
+          </p>
+
+          <form onSubmit={handlePlayDirect} className="flex flex-col sm:flex-row gap-2 w-full max-w-md">
+            <input
+              type="url"
+              placeholder="Enter video or stream URL (https://...)"
+              value={streamInput}
+              onChange={(e) => setStreamInput(e.target.value)}
+              className="flex-1 px-4 py-2.5 rounded-xl bg-slate-900 border border-white/20 text-xs text-white focus:outline-none focus:border-rose-400"
+            />
+            <button
+              type="submit"
+              className="px-5 py-2.5 rounded-xl bg-rose-500 hover:bg-rose-400 font-bold text-xs text-white cursor-pointer shadow-lg"
+            >
+              Play Video
+            </button>
+          </form>
+        </div>
+      ) : (
+        /* Saved Custom Streams */
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+          {catalog.map((item) => (
+            <div
+              key={item.id}
+              onClick={() => {
+                setActiveStreamUrl(item.url);
+                setActiveTitle(item.title);
+              }}
+              className="p-4 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-rose-500/50 transition-all cursor-pointer flex items-center justify-between group"
+            >
+              <div className="flex items-center gap-3 truncate">
+                <div className="w-10 h-10 rounded-xl bg-rose-500/20 border border-rose-500/30 flex items-center justify-center text-rose-300">
+                  <Play className="w-4 h-4 fill-current ml-0.5" />
+                </div>
+                <div className="truncate">
+                  <div className="text-xs font-bold text-white truncate">{item.title}</div>
+                  <div className="text-[10px] text-slate-400 truncate">{item.url}</div>
+                </div>
+              </div>
+              <button
+                onClick={(e) => handleRemove(item.id, e)}
+                className="p-1.5 text-slate-500 hover:text-rose-400 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
