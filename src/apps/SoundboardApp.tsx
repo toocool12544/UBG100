@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Volume2, Sparkles, Flame, Search } from 'lucide-react';
+import { Volume2, Plus, Trash2, VolumeX } from 'lucide-react';
 import { sound } from '../utils/soundEffects';
 
 interface SoundItem {
@@ -8,36 +8,57 @@ interface SoundItem {
   emoji: string;
   category: string;
   color: string;
+  freq?: number;
 }
 
-const SOUNDS: SoundItem[] = [
-  { id: 'airhorn', name: 'Air Horn', emoji: '📯', category: 'Viral', color: 'from-amber-500 to-red-600' },
-  { id: 'vineboom', name: 'Vine Boom', emoji: '💥', category: 'Bass', color: 'from-purple-600 to-indigo-900' },
-  { id: 'bruh', name: 'Bruh Moment', emoji: '🗿', category: 'Vocal', color: 'from-stone-600 to-stone-800' },
-  { id: 'discord', name: 'Discord Ping', emoji: '🔔', category: 'Notification', color: 'from-indigo-500 to-blue-700' },
-  { id: 'metalpipe', name: 'Metal Pipe Drop', emoji: '🔩', category: 'Chaos', color: 'from-slate-500 to-zinc-700' },
-  { id: 'oof', name: 'Roblox OOF', emoji: '🧱', category: 'Gaming', color: 'from-rose-500 to-red-700' },
-  { id: 'levelup', name: 'Level Up Fanfare', emoji: '✨', category: 'Jingle', color: 'from-emerald-500 to-teal-700' },
-  { id: 'laser', name: 'Sci-Fi Laser', emoji: '⚡', category: 'Action', color: 'from-cyan-400 to-blue-600' },
-  { id: 'coin', name: 'Retro Coin', emoji: '🪙', category: '8-Bit', color: 'from-yellow-400 to-amber-600' },
-  { id: 'jump', name: 'Spring Jump', emoji: '🍄', category: '8-Bit', color: 'from-orange-500 to-amber-600' },
-  { id: 'explosion', name: 'Deep Detonation', emoji: '💣', category: 'Bass', color: 'from-red-600 to-rose-900' },
-  { id: 'keypad', name: 'Tactile Click', emoji: '⌨️', category: 'UI', color: 'from-teal-500 to-emerald-700' },
-];
-
 export const SoundboardApp: React.FC = () => {
+  const [sounds, setSounds] = useState<SoundItem[]>([]);
   const [activeSound, setActiveSound] = useState<string | null>(null);
   const [filter, setFilter] = useState<string>('');
+  const [showAdd, setShowAdd] = useState<boolean>(false);
+  const [newName, setNewName] = useState<string>('');
+  const [newEmoji, setNewEmoji] = useState<string>('🔔');
+  const [newCategory, setNewCategory] = useState<string>('Custom');
 
-  const playEffect = (id: string) => {
-    setActiveSound(id);
-    sound.playSoundEffect(id);
+  const playEffect = (item: SoundItem) => {
+    setActiveSound(item.id);
+    if (item.freq) {
+      sound.playKeypadClick(item.freq);
+    } else {
+      sound.playKeypadClick(520);
+    }
     setTimeout(() => setActiveSound(null), 300);
   };
 
-  const filteredSounds = SOUNDS.filter((s) =>
-    s.name.toLowerCase().includes(filter.toLowerCase()) ||
-    s.category.toLowerCase().includes(filter.toLowerCase())
+  const handleAddSound = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newName.trim()) return;
+
+    const newItem: SoundItem = {
+      id: Date.now().toString(),
+      name: newName.trim(),
+      emoji: newEmoji.trim() || '🔊',
+      category: newCategory.trim() || 'Custom',
+      color: 'from-amber-500 to-orange-600',
+      freq: 400 + Math.floor(Math.random() * 600),
+    };
+
+    setSounds((prev) => [...prev, newItem]);
+    setNewName('');
+    setShowAdd(false);
+    sound.playSoundEffect('levelup');
+  };
+
+  const handleRemoveSound = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    sound.playKeypadClick(400);
+    setSounds((prev) => prev.filter((s) => s.id !== id));
+  };
+
+  const filteredSounds = sounds.filter(
+    (s) =>
+      s.name.toLowerCase().includes(filter.toLowerCase()) ||
+      s.category.toLowerCase().includes(filter.toLowerCase())
   );
 
   return (
@@ -54,44 +75,112 @@ export const SoundboardApp: React.FC = () => {
           </p>
         </div>
 
-        <input
-          type="text"
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-          placeholder="Filter sound effects..."
-          className="px-3.5 py-1.5 rounded-xl bg-white/10 border border-white/15 text-xs text-white focus:outline-none focus:border-amber-400 w-full sm:w-56"
-        />
+        <div className="flex items-center gap-2">
+          {sounds.length > 0 && (
+            <input
+              type="text"
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              placeholder="Filter sounds..."
+              className="px-3.5 py-1.5 rounded-xl bg-white/10 border border-white/15 text-xs text-white focus:outline-none focus:border-amber-400 w-full sm:w-48"
+            />
+          )}
+          <button
+            onClick={() => setShowAdd(!showAdd)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 font-bold text-xs text-slate-950 cursor-pointer shadow-md"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Add Sound</span>
+          </button>
+        </div>
       </div>
 
-      {/* Grid of Sound Buttons */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3.5 flex-1 overflow-y-auto">
-        {filteredSounds.map((s) => {
-          const isActive = activeSound === s.id;
-          return (
-            <button
-              key={s.id}
-              onClick={() => playEffect(s.id)}
-              className={`p-4 rounded-2xl border transition-all duration-150 flex flex-col items-center justify-center text-center cursor-pointer shadow-lg active:scale-95 group relative overflow-hidden ${
-                isActive
-                  ? 'border-amber-400 bg-amber-500/30 scale-95 shadow-amber-500/30'
-                  : 'border-white/10 bg-white/5 hover:bg-white/10 hover:border-amber-400/40'
-              }`}
-            >
+      {/* Add Sound Form Modal / Inline */}
+      {showAdd && (
+        <form
+          onSubmit={handleAddSound}
+          className="p-4 mb-4 rounded-2xl bg-amber-950/40 border border-amber-500/30 flex flex-wrap gap-3 items-center"
+        >
+          <input
+            type="text"
+            placeholder="Sound name (e.g., Victory Chime)"
+            value={newName}
+            onChange={(e) => setNewName(e.target.value)}
+            className="px-3 py-1.5 rounded-xl bg-black/40 border border-white/20 text-xs text-white focus:outline-none focus:border-amber-400 flex-1 min-w-[180px]"
+          />
+          <input
+            type="text"
+            placeholder="Emoji (e.g. 🔔)"
+            value={newEmoji}
+            onChange={(e) => setNewEmoji(e.target.value)}
+            className="w-16 px-3 py-1.5 rounded-xl bg-black/40 border border-white/20 text-xs text-center text-white focus:outline-none focus:border-amber-400"
+          />
+          <button
+            type="submit"
+            className="px-4 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 font-bold text-xs text-slate-950 cursor-pointer"
+          >
+            Save Sound
+          </button>
+          <button
+            type="button"
+            onClick={() => setShowAdd(false)}
+            className="px-3 py-1.5 text-xs text-slate-400 hover:text-white"
+          >
+            Cancel
+          </button>
+        </form>
+      )}
+
+      {/* Grid or Empty State */}
+      {sounds.length === 0 ? (
+        <div className="flex-1 flex flex-col items-center justify-center p-8 text-center rounded-2xl bg-white/5 border border-dashed border-white/10">
+          <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-3xl mb-4">
+            <VolumeX className="w-8 h-8 text-amber-400/50" />
+          </div>
+          <h3 className="text-base font-bold text-white mb-1">No Sounds in Soundboard</h3>
+          <p className="text-xs text-slate-400 max-w-sm mb-4">
+            All default soundboards have been removed. You can create custom synth sound effects by clicking "Add Sound" above.
+          </p>
+          <button
+            onClick={() => setShowAdd(true)}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 font-bold text-xs text-slate-950 cursor-pointer shadow-lg"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Create Custom Sound</span>
+          </button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 overflow-y-auto pr-1">
+          {filteredSounds.map((s) => {
+            const isActive = activeSound === s.id;
+            return (
               <div
-                className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${s.color} flex items-center justify-center text-2xl shadow-md mb-2 group-hover:scale-110 transition-transform`}
+                key={s.id}
+                onClick={() => playEffect(s)}
+                className={`relative p-4 rounded-2xl border transition-all cursor-pointer flex flex-col items-center justify-center gap-2 select-none group ${
+                  isActive
+                    ? 'scale-95 bg-amber-500/30 border-amber-400 shadow-lg shadow-amber-500/30'
+                    : 'bg-white/5 hover:bg-white/10 border-white/10 hover:border-white/20'
+                }`}
               >
-                <span>{s.emoji}</span>
+                <button
+                  onClick={(e) => handleRemoveSound(s.id, e)}
+                  className="absolute top-2 right-2 p-1 text-slate-500 hover:text-rose-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+                <div className="text-3xl filter drop-shadow">{s.emoji}</div>
+                <div className="text-xs font-bold text-white text-center truncate max-w-full">
+                  {s.name}
+                </div>
+                <div className="text-[10px] text-slate-400 font-medium px-2 py-0.5 rounded-full bg-white/5">
+                  {s.category}
+                </div>
               </div>
-              <span className="font-bold text-xs text-white group-hover:text-amber-200 transition-colors">
-                {s.name}
-              </span>
-              <span className="text-[10px] text-slate-400 font-mono mt-0.5">
-                {s.category}
-              </span>
-            </button>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };
