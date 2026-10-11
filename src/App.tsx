@@ -30,7 +30,7 @@ import { CalculatorApp } from './apps/CalculatorApp';
 import { AppCreatorApp } from './apps/AppCreatorApp';
 import { MeetApp, InboxApp, NotepadApp } from './apps/StealthApps';
 import { MoviesApp, TiktokApp, AnimeApp, MusicApp } from './apps/EntertainmentApps';
-import { SolaraIdApp, VoiceApp, ClockApp, FastComApp } from './apps/UtilityApps';
+import { VoiceApp, ClockApp, FastComApp } from './apps/UtilityApps';
 
 export default function App() {
   // Lock screen is active first thing upon entering website (passcode 1234)
@@ -225,8 +225,6 @@ export default function App() {
         return <MusicApp />;
       case 'notepad':
         return <NotepadApp />;
-      case 'solara-id':
-        return <SolaraIdApp />;
       case 'voice':
         return <VoiceApp />;
       case 'clock':

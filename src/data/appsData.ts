@@ -217,14 +217,6 @@ export const APPS_CATALOG: AppDefinition[] = [
     gradient: 'from-amber-400 to-yellow-500',
   },
   {
-    id: 'solara-id',
-    name: 'Solara ID',
-    subtitle: 'Profile & Level',
-    iconType: 'solara-id',
-    category: 'social',
-    gradient: 'from-blue-600 to-indigo-700',
-  },
-  {
     id: 'voice',
     name: 'Voice',
     subtitle: 'Audio Pitch Shifter',

@@ -1,134 +1,14 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
-  User,
-  Trophy,
-  Award,
-  Zap,
   Mic,
   Square,
   Play,
   RotateCcw,
   Clock,
   Gauge,
-  Sparkles,
   Download,
-  ShieldCheck,
 } from 'lucide-react';
 import { sound } from '../utils/soundEffects';
-import { safeStorage } from '../utils/storage';
-
-/* --- SOLARA ID APP --- */
-export const SolaraIdApp: React.FC = () => {
-  const [username, setUsername] = useState<string>(() => {
-    return safeStorage.getItem('aurora_username') || 'AuroraGamer#1234';
-  });
-  const [avatar, setAvatar] = useState<string>('👾');
-
-  const avatars = ['👾', '🐱‍👤', '🚀', '⚡', '🐉', '🎮', '👑', '🔥'];
-
-  const achievements = [
-    { title: 'Passcode Master', desc: 'Unlocked AuroraOS with PIN 1234', unlocked: true, icon: '🔑' },
-    { title: '2048 Architect', desc: 'Reached 1024+ in sliding tile puzzle', unlocked: true, icon: '🔢' },
-    { title: 'Stealth Ninja', desc: 'Switched tab cloak to Google Classroom', unlocked: true, icon: '🕶️' },
-    { title: 'Retro Champion', desc: 'Scored 100+ points in Breakout', unlocked: false, icon: '🕹️' },
-    { title: 'Hacker Elite', desc: 'Executed Matrix digital rain command', unlocked: true, icon: '💻' },
-  ];
-
-  const handleSave = () => {
-    sound.playSoundEffect('levelup');
-    safeStorage.setItem('aurora_username', username);
-  };
-
-  return (
-    <div className="flex flex-col h-full max-w-4xl mx-auto p-4 text-slate-100">
-      <div className="p-6 rounded-3xl bg-gradient-to-r from-blue-950 via-slate-900 to-indigo-950 border border-blue-500/20 shadow-2xl mb-6 flex flex-col sm:flex-row items-center gap-6">
-        <div className="w-24 h-24 rounded-3xl bg-blue-600/30 border-2 border-blue-400 flex items-center justify-center text-5xl shadow-xl shadow-blue-500/20">
-          {avatar}
-        </div>
-
-        <div className="flex-1 text-center sm:text-left">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-1">
-            <input
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="text-2xl font-black text-white bg-transparent border-b border-white/20 focus:outline-none focus:border-blue-400 font-mono"
-            />
-            <span className="px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 text-xs font-bold w-fit mx-auto sm:mx-0">
-              Level 14 Veteran
-            </span>
-          </div>
-
-          <p className="text-xs text-slate-400 mb-3">Solara Gamer Identity & Stats Hub</p>
-
-          {/* XP Progress Bar */}
-          <div className="w-full max-w-md">
-            <div className="flex justify-between text-[11px] font-mono text-slate-400 mb-1">
-              <span>XP: 7,420 / 10,000</span>
-              <span className="text-blue-300">74%</span>
-            </div>
-            <div className="w-full h-2 rounded-full bg-white/10 overflow-hidden">
-              <div className="h-full bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full w-[74%]" />
-            </div>
-          </div>
-        </div>
-
-        <button
-          onClick={handleSave}
-          className="px-4 py-2 rounded-xl bg-blue-500 hover:bg-blue-600 text-white font-bold text-xs cursor-pointer shadow-lg"
-        >
-          Save Profile
-        </button>
-      </div>
-
-      {/* Choose Avatar */}
-      <div className="mb-6">
-        <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
-          Choose Avatar Icon
-        </h4>
-        <div className="flex gap-2">
-          {avatars.map((av) => (
-            <button
-              key={av}
-              onClick={() => {
-                sound.playKeypadClick(600);
-                setAvatar(av);
-              }}
-              className={`w-11 h-11 rounded-2xl border text-xl flex items-center justify-center cursor-pointer transition-all ${
-                avatar === av ? 'border-blue-400 bg-blue-500/30 scale-110 shadow-lg' : 'border-white/10 bg-white/5 hover:bg-white/10'
-              }`}
-            >
-              {av}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Achievements List */}
-      <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
-        Unlocked Badges & Achievements
-      </h4>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-        {achievements.map((a, idx) => (
-          <div
-            key={idx}
-            className={`p-3 rounded-xl border flex items-center gap-3 ${
-              a.unlocked
-                ? 'bg-blue-500/10 border-blue-500/30 text-white'
-                : 'bg-white/5 border-white/5 opacity-50'
-            }`}
-          >
-            <span className="text-2xl">{a.icon}</span>
-            <div>
-              <div className="text-xs font-bold">{a.title}</div>
-              <div className="text-[10px] text-slate-400">{a.desc}</div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
 
 /* --- VOICE RECORDER & PITCH SHIFTER --- */
 export const VoiceApp: React.FC = () => {
