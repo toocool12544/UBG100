@@ -1,160 +1,193 @@
 import React, { useState } from 'react';
-import { Calendar as CalendarIcon, Clock, Plus, Check, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 import { sound } from '../utils/soundEffects';
 
-interface EventItem {
-  id: string;
-  time: string;
-  title: string;
-  type: 'class' | 'exam' | 'break' | 'gaming';
-}
-
-const DEFAULT_EVENTS: EventItem[] = [
-  { id: '1', time: '08:30 AM', title: 'Period 1: Algebra II (Disguised Mode)', type: 'class' },
-  { id: '2', time: '09:45 AM', title: 'Period 2: Chemistry Lab', type: 'class' },
-  { id: '3', time: '11:15 AM', title: 'Free Period / Unblocked Gaming Break', type: 'gaming' },
-  { id: '4', time: '12:30 PM', title: 'Lunch & Multiplayer Lobby', type: 'break' },
-  { id: '5', time: '01:45 PM', title: 'Period 4: Computer Science', type: 'class' },
+const MONTH_NAMES = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December'
 ];
 
+const DAYS_OF_WEEK = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
 export const CalendarApp: React.FC = () => {
-  const [events, setEvents] = useState<EventItem[]>(DEFAULT_EVENTS);
-  const [newTitle, setNewTitle] = useState<string>('');
-  const [newTime, setNewTime] = useState<string>('');
-  const [selectedDay, setSelectedDay] = useState<number>(10);
+  const today = new Date();
+  const [viewDate, setViewDate] = useState<Date>(new Date(today.getFullYear(), today.getMonth(), 1));
+  const [selectedDate, setSelectedDate] = useState<Date>(today);
 
-  const addEvent = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newTitle.trim()) return;
-    sound.playSoundEffect('levelup');
-    setEvents([
-      ...events,
-      {
-        id: Date.now().toString(),
-        time: newTime || '02:30 PM',
-        title: newTitle,
-        type: 'class',
-      },
-    ]);
-    setNewTitle('');
-    setNewTime('');
+  const year = viewDate.getFullYear();
+  const month = viewDate.getMonth();
+
+  // Navigation
+  const prevMonth = () => {
+    sound.playKeypadClick(450);
+    setViewDate(new Date(year, month - 1, 1));
   };
 
-  const removeEvent = (id: string) => {
-    sound.playKeypadClick(400);
-    setEvents(events.filter((ev) => ev.id !== id));
+  const nextMonth = () => {
+    sound.playKeypadClick(550);
+    setViewDate(new Date(year, month + 1, 1));
   };
+
+  const goToToday = () => {
+    sound.playKeypadClick(600);
+    const now = new Date();
+    setViewDate(new Date(now.getFullYear(), now.getMonth(), 1));
+    setSelectedDate(now);
+  };
+
+  // Month grid calculations
+  const firstDayIndex = new Date(year, month, 1).getDay(); // 0 is Sunday
+  const daysInCurrentMonth = new Date(year, month + 1, 0).getDate();
+  const daysInPrevMonth = new Date(year, month, 0).getDate();
+
+  const isSameDay = (d1: Date, d2: Date) => {
+    return (
+      d1.getFullYear() === d2.getFullYear() &&
+      d1.getMonth() === d2.getMonth() &&
+      d1.getDate() === d2.getDate()
+    );
+  };
+
+  const formattedSelectedDate = selectedDate.toLocaleDateString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
 
   return (
-    <div className="flex flex-col h-full max-w-4xl mx-auto p-4 text-slate-100">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1">
-        {/* Month Calendar Grid */}
-        <div className="p-4 rounded-2xl bg-slate-900/80 border border-white/10 flex flex-col">
-          <div className="flex items-center justify-between mb-4">
+    <div className="flex flex-col h-full max-w-3xl mx-auto p-4 sm:p-6 text-slate-100 items-center justify-center">
+      {/* Calendar Card */}
+      <div className="w-full rounded-3xl bg-slate-900/80 border border-sky-500/20 shadow-2xl p-6 sm:p-8 backdrop-blur-xl flex flex-col">
+        {/* Header Bar */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 mb-6 border-b border-sky-500/15">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-2xl bg-sky-500/15 border border-sky-400/30 flex items-center justify-center text-sky-400 shadow-lg shadow-sky-500/10">
+              <CalendarIcon className="w-6 h-6" />
+            </div>
             <div>
-              <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                <CalendarIcon className="w-5 h-5 text-rose-400" />
-                <span>October 2026</span>
-              </h3>
-              <p className="text-xs text-slate-400">Aurora Academic Schedule</p>
-            </div>
-            <div className="flex gap-1">
-              <button className="p-1 rounded bg-white/5 hover:bg-white/10"><ChevronLeft className="w-4 h-4" /></button>
-              <button className="p-1 rounded bg-white/5 hover:bg-white/10"><ChevronRight className="w-4 h-4" /></button>
+              <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+                {MONTH_NAMES[month]} <span className="text-sky-400">{year}</span>
+              </h2>
+              <p className="text-xs text-sky-200/60 font-medium">Aurora Calendar</p>
             </div>
           </div>
 
-          {/* Days of week */}
-          <div className="grid grid-cols-7 gap-1 text-center text-[11px] font-bold text-slate-400 mb-2">
-            <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
-          </div>
-
-          {/* Date cells */}
-          <div className="grid grid-cols-7 gap-1.5 flex-1">
-            {/* Empty slots for start of month */}
-            {[0, 1, 2, 3].map((i) => (
-              <div key={`empty-${i}`} className="h-9" />
-            ))}
-            {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => {
-              const isToday = day === 10;
-              const isSelected = day === selectedDay;
-              return (
-                <button
-                  key={day}
-                  onClick={() => {
-                    sound.playKeypadClick(500);
-                    setSelectedDay(day);
-                  }}
-                  className={`h-9 rounded-xl text-xs font-semibold flex items-center justify-center transition-all cursor-pointer ${
-                    isToday
-                      ? 'bg-rose-500 text-white font-black shadow-lg shadow-rose-500/30'
-                      : isSelected
-                      ? 'bg-sky-500/30 border border-sky-400 text-sky-200'
-                      : 'hover:bg-white/10 text-slate-300'
-                  }`}
-                >
-                  {day}
-                </button>
-              );
-            })}
-          </div>
-
-          <div className="mt-4 p-3 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between text-xs">
-            <span className="text-slate-400">School Bell Countdown:</span>
-            <span className="font-mono font-bold text-amber-300">42m until Period 3</span>
+          <div className="flex items-center gap-2 self-end sm:self-auto">
+            <button
+              onClick={goToToday}
+              className="px-4 py-2 rounded-xl bg-sky-500/20 hover:bg-sky-500/30 border border-sky-400/30 text-sky-300 text-xs font-bold cursor-pointer transition-all active:scale-95 shadow-sm"
+            >
+              Today
+            </button>
+            <div className="flex items-center gap-1 bg-slate-950/70 border border-sky-500/20 rounded-xl p-1">
+              <button
+                onClick={prevMonth}
+                className="p-2 rounded-lg hover:bg-white/10 text-sky-300 cursor-pointer active:scale-90 transition-transform"
+                title="Previous Month"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <button
+                onClick={nextMonth}
+                className="p-2 rounded-lg hover:bg-white/10 text-sky-300 cursor-pointer active:scale-90 transition-transform"
+                title="Next Month"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Schedule & Events Planner */}
-        <div className="p-4 rounded-2xl bg-slate-900/80 border border-white/10 flex flex-col">
-          <h3 className="text-sm font-bold text-white mb-3 flex items-center justify-between">
-            <span>Period Timetable • Oct {selectedDay}</span>
-            <span className="text-xs text-sky-400 font-mono">{events.length} periods</span>
-          </h3>
+        {/* Days of Week Header */}
+        <div className="grid grid-cols-7 gap-2 text-center text-xs font-bold text-sky-400/80 uppercase tracking-wider mb-3">
+          {DAYS_OF_WEEK.map((day) => (
+            <div key={day} className="py-1">
+              {day}
+            </div>
+          ))}
+        </div>
 
-          <div className="flex-1 space-y-2 overflow-y-auto mb-4 max-h-[300px]">
-            {events.map((ev) => (
-              <div
-                key={ev.id}
-                className="p-2.5 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between text-xs group"
+        {/* Calendar Grid */}
+        <div className="grid grid-cols-7 gap-2 sm:gap-2.5">
+          {/* Previous month trailing days */}
+          {Array.from({ length: firstDayIndex }).map((_, i) => {
+            const dayNum = daysInPrevMonth - firstDayIndex + i + 1;
+            const prevMonthDate = new Date(year, month - 1, dayNum);
+            return (
+              <button
+                key={`prev-${i}`}
+                onClick={() => {
+                  sound.playKeypadClick(400);
+                  setViewDate(new Date(year, month - 1, 1));
+                  setSelectedDate(prevMonthDate);
+                }}
+                className="h-11 sm:h-13 rounded-2xl text-xs sm:text-sm text-slate-600 hover:text-slate-400 hover:bg-white/5 flex items-center justify-center transition-colors cursor-pointer"
               >
-                <div>
-                  <div className="font-semibold text-slate-100">{ev.title}</div>
-                  <div className="text-[10px] text-sky-400 font-mono">{ev.time}</div>
-                </div>
-                <button
-                  onClick={() => removeEvent(ev.id)}
-                  className="opacity-0 group-hover:opacity-100 text-rose-400 hover:text-rose-300 text-xs px-2 py-0.5 rounded cursor-pointer"
-                >
-                  ✕
-                </button>
-              </div>
-            ))}
-          </div>
+                {dayNum}
+              </button>
+            );
+          })}
 
-          {/* Add period form */}
-          <form onSubmit={addEvent} className="flex gap-2">
-            <input
-              type="text"
-              value={newTime}
-              onChange={(e) => setNewTime(e.target.value)}
-              placeholder="02:30 PM"
-              className="w-24 px-2 py-1.5 rounded-xl bg-white/10 border border-white/15 text-xs text-white focus:outline-none"
-            />
-            <input
-              type="text"
-              value={newTitle}
-              onChange={(e) => setNewTitle(e.target.value)}
-              placeholder="New class or task..."
-              className="flex-1 px-3 py-1.5 rounded-xl bg-white/10 border border-white/15 text-xs text-white focus:outline-none"
-            />
-            <button
-              type="submit"
-              className="px-3 py-1.5 rounded-xl bg-rose-500 hover:bg-rose-600 font-bold text-xs text-white cursor-pointer"
-            >
-              Add
-            </button>
-          </form>
+          {/* Current month days */}
+          {Array.from({ length: daysInCurrentMonth }, (_, i) => i + 1).map((day) => {
+            const dateObj = new Date(year, month, day);
+            const isToday = isSameDay(dateObj, today);
+            const isSelected = isSameDay(dateObj, selectedDate);
+
+            return (
+              <button
+                key={day}
+                onClick={() => {
+                  sound.playKeypadClick(500);
+                  setSelectedDate(dateObj);
+                }}
+                className={`h-11 sm:h-13 rounded-2xl text-xs sm:text-sm font-semibold flex items-center justify-center transition-all cursor-pointer relative ${
+                  isSelected
+                    ? 'bg-gradient-to-r from-sky-500 to-blue-600 text-white font-black shadow-lg shadow-sky-500/30 scale-105 border border-cyan-300'
+                    : isToday
+                    ? 'bg-sky-500/20 border border-sky-400 text-sky-300 font-bold'
+                    : 'text-slate-200 hover:bg-white/10 border border-transparent'
+                }`}
+              >
+                <span>{day}</span>
+                {isToday && !isSelected && (
+                  <span className="absolute bottom-1 w-1.5 h-1.5 rounded-full bg-sky-400 shadow-[0_0_6px_rgba(56,189,248,0.9)]" />
+                )}
+              </button>
+            );
+          })}
+
+          {/* Next month leading days to complete grid */}
+          {(() => {
+            const totalCells = firstDayIndex + daysInCurrentMonth;
+            const remainingCells = (7 - (totalCells % 7)) % 7;
+            return Array.from({ length: remainingCells }).map((_, i) => {
+              const dayNum = i + 1;
+              const nextMonthDate = new Date(year, month + 1, dayNum);
+              return (
+                <button
+                  key={`next-${i}`}
+                  onClick={() => {
+                    sound.playKeypadClick(400);
+                    setViewDate(new Date(year, month + 1, 1));
+                    setSelectedDate(nextMonthDate);
+                  }}
+                  className="h-11 sm:h-13 rounded-2xl text-xs sm:text-sm text-slate-600 hover:text-slate-400 hover:bg-white/5 flex items-center justify-center transition-colors cursor-pointer"
+                >
+                  {dayNum}
+                </button>
+              );
+            });
+          })()}
+        </div>
+
+        {/* Selected Date Footer */}
+        <div className="mt-6 pt-5 border-t border-sky-500/15 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 gap-2">
+          <span>Selected Date</span>
+          <span className="font-semibold text-sky-300 text-sm">
+            {formattedSelectedDate}
+          </span>
         </div>
       </div>
     </div>
