@@ -5,7 +5,6 @@ import {
   Play,
   RotateCcw,
   Clock,
-  Gauge,
   Download,
 } from 'lucide-react';
 import { sound } from '../utils/soundEffects';
@@ -220,76 +219,4 @@ export const ClockApp: React.FC = () => {
   );
 };
 
-/* --- FAST.COM SPEED TEST APP --- */
-export const FastComApp: React.FC = () => {
-  const [speed, setSpeed] = useState<number>(0);
-  const [isTesting, setIsTesting] = useState<boolean>(false);
-  const [isFinished, setIsFinished] = useState<boolean>(false);
 
-  const startTest = () => {
-    sound.playSoundEffect('laser');
-    setIsTesting(true);
-    setIsFinished(false);
-    setSpeed(0);
-
-    let current = 0;
-    const target = 184 + Math.floor(Math.random() * 40);
-    const interval = setInterval(() => {
-      current += Math.floor(Math.random() * 12) + 2;
-      if (current >= target) {
-        clearInterval(interval);
-        setSpeed(target);
-        setIsTesting(false);
-        setIsFinished(true);
-        sound.playSoundEffect('levelup');
-      } else {
-        setSpeed(current);
-      }
-    }, 60);
-  };
-
-  useEffect(() => {
-    startTest();
-  }, []);
-
-  return (
-    <div className="flex flex-col items-center justify-center h-full max-w-lg mx-auto p-4 text-slate-100">
-      <div className="w-full rounded-3xl bg-slate-950 border border-white/10 p-8 flex flex-col items-center text-center shadow-2xl">
-        <span className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">
-          Aurora Speed Engine
-        </span>
-
-        <div className="my-6">
-          <div className="text-7xl sm:text-8xl font-black font-mono text-white tracking-tight flex items-baseline justify-center gap-2">
-            <span>{speed}</span>
-            <span className="text-2xl sm:text-3xl font-normal text-rose-400 font-sans">Mbps</span>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-3 gap-4 w-full pt-6 border-t border-white/10 text-center mb-6">
-          <div>
-            <div className="text-[10px] uppercase font-bold text-slate-400">Latency</div>
-            <div className="text-sm font-mono font-bold text-emerald-400">12 ms</div>
-          </div>
-          <div>
-            <div className="text-[10px] uppercase font-bold text-slate-400">Upload</div>
-            <div className="text-sm font-mono font-bold text-sky-400">92 Mbps</div>
-          </div>
-          <div>
-            <div className="text-[10px] uppercase font-bold text-slate-400">Bufferbloat</div>
-            <div className="text-sm font-mono font-bold text-amber-400">A+ Grade</div>
-          </div>
-        </div>
-
-        <button
-          onClick={startTest}
-          disabled={isTesting}
-          className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-rose-500 hover:bg-rose-600 disabled:opacity-50 text-white font-bold text-xs shadow-lg shadow-rose-500/30 cursor-pointer transition-all active:scale-95"
-        >
-          <RotateCcw className={`w-4 h-4 ${isTesting ? 'animate-spin' : ''}`} />
-          <span>{isTesting ? 'Testing Speed...' : 'Test Again'}</span>
-        </button>
-      </div>
-    </div>
-  );
-};

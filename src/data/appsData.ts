@@ -182,15 +182,6 @@ export const APPS_CATALOG: AppDefinition[] = [
     category: 'games',
     gradient: 'from-sky-400 to-cyan-600',
   },
-  {
-    id: 'app-creator',
-    name: 'App Creator',
-    subtitle: 'Embed Custom Apps',
-    iconType: 'code',
-    category: 'utility',
-    gradient: 'from-teal-400 to-emerald-600',
-  },
-
   // ROW 4
   {
     id: 'anime',
@@ -231,14 +222,6 @@ export const APPS_CATALOG: AppDefinition[] = [
     iconType: 'clock',
     category: 'utility',
     gradient: 'from-neutral-800 to-zinc-950',
-  },
-  {
-    id: 'fast-com',
-    name: 'Fast.com',
-    subtitle: 'Speed & Ping Test',
-    iconType: 'speed',
-    category: 'utility',
-    gradient: 'from-red-400 via-rose-500 to-orange-500',
   },
 ];
 

@@ -27,10 +27,9 @@ import { SoundboardApp } from './apps/SoundboardApp';
 import { PaintApp } from './apps/PaintApp';
 import { CelesteApp } from './apps/CelesteApp';
 import { CalculatorApp } from './apps/CalculatorApp';
-import { AppCreatorApp } from './apps/AppCreatorApp';
 import { MeetApp, InboxApp, NotepadApp } from './apps/StealthApps';
 import { MoviesApp, TiktokApp, AnimeApp, MusicApp } from './apps/EntertainmentApps';
-import { VoiceApp, ClockApp, FastComApp } from './apps/UtilityApps';
+import { VoiceApp, ClockApp } from './apps/UtilityApps';
 
 export default function App() {
   // Lock screen is active first thing upon entering website (passcode 1234)
@@ -217,8 +216,6 @@ export default function App() {
         return <CalculatorApp />;
       case 'celeste':
         return <CelesteApp />;
-      case 'app-creator':
-        return <AppCreatorApp />;
       case 'anime':
         return <AnimeApp />;
       case 'music':
@@ -229,8 +226,6 @@ export default function App() {
         return <VoiceApp />;
       case 'clock':
         return <ClockApp />;
-      case 'fast-com':
-        return <FastComApp />;
       default:
         return (
           <div className="p-8 text-center text-slate-400">
