@@ -1,0 +1,6 @@
+{
+  "name": "AuroraOS - Unblocked Games & Apps",
+  "description": "Ultra-fast unblocked games portal, retro emulators, media player, and productivity suite with blue aurora aesthetic and passcode lock.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
