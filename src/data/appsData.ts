@@ -85,14 +85,6 @@ export const APPS_CATALOG: AppDefinition[] = [
     gradient: 'from-red-600 to-red-700',
   },
   {
-    id: 'solara-ai',
-    name: 'Solara AI',
-    subtitle: 'Smart Companion',
-    iconType: 'sparkle',
-    category: 'utility',
-    gradient: 'from-emerald-400 via-teal-500 to-cyan-600',
-  },
-  {
     id: 'global-chat',
     name: 'Global Chat',
     subtitle: 'Lobby & Channels',

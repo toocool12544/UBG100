@@ -19,7 +19,6 @@ import { CalendarApp } from './apps/CalendarApp';
 import { ThemesApp } from './apps/ThemesApp';
 import { RetroApp } from './apps/RetroApp';
 import { ClipsApp } from './apps/ClipsApp';
-import { SolaraAiApp } from './apps/SolaraAiApp';
 import { GlobalChatApp } from './apps/GlobalChatApp';
 import { LinksApp } from './apps/LinksApp';
 import { RobloxApp } from './apps/RobloxApp';
@@ -194,8 +193,6 @@ export default function App() {
         return <RetroApp />;
       case 'clips':
         return <ClipsApp />;
-      case 'solara-ai':
-        return <SolaraAiApp />;
       case 'global-chat':
         return <GlobalChatApp />;
       case 'links':
