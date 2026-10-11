@@ -13,6 +13,11 @@ export default defineConfig(() => {
         input: {
           main: path.resolve(__dirname, 'index.html'),
         },
+        output: {
+          entryFileNames: 'assets/main.js',
+          chunkFileNames: 'assets/[name].js',
+          assetFileNames: 'assets/main.[ext]',
+        },
       },
     },
     resolve: {

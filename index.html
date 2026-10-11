@@ -16,7 +16,27 @@
   </head>
   <body>
     <div id="root"></div>
+    <!-- Vite development entry point -->
     <script type="module" src="./src/main.tsx"></script>
+    <!-- Static entry point fallback for direct GitHub Pages hosting -->
+    <script type="module">
+      window.addEventListener('DOMContentLoaded', () => {
+        setTimeout(() => {
+          const root = document.getElementById('root');
+          if (root && root.childElementCount === 0) {
+            const css = document.createElement('link');
+            css.rel = 'stylesheet';
+            css.href = './assets/main.css';
+            document.head.appendChild(css);
+
+            const script = document.createElement('script');
+            script.type = 'module';
+            script.src = './assets/main.js';
+            document.body.appendChild(script);
+          }
+        }, 120);
+      });
+    </script>
   </body>
 </html>
 
