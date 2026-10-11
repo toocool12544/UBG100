@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Lock, Unlock, Delete, RotateCcw, ShieldCheck, KeyRound } from 'lucide-react';
 import { sound } from '../utils/soundEffects';
+import { safeStorage } from '../utils/storage';
 
 interface LockScreenProps {
   onUnlock: () => void;
@@ -28,7 +29,8 @@ export const LockScreen: React.FC<LockScreenProps> = ({ onUnlock }) => {
       setError(false);
 
       if (newPin.length === 4) {
-        if (newPin === '1234') {
+        const correctPin = safeStorage.getItem('aurora_custom_passcode') || '1234';
+        if (newPin === correctPin) {
           sound.playSuccess();
           setIsUnlocked(true);
           setTimeout(() => {

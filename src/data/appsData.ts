@@ -66,6 +66,14 @@ export const APPS_CATALOG: AppDefinition[] = [
     category: 'utility',
     gradient: 'from-violet-500 to-purple-700',
   },
+  {
+    id: 'settings',
+    name: 'Settings',
+    subtitle: 'System & Preferences',
+    iconType: 'settings',
+    category: 'utility',
+    gradient: 'from-slate-700 via-slate-800 to-slate-900',
+  },
 
   // ROW 2
   {

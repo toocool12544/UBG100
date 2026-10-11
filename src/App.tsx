@@ -17,6 +17,7 @@ import { SuggestionsApp } from './apps/SuggestionsApp';
 import { CameraApp } from './apps/CameraApp';
 import { CalendarApp } from './apps/CalendarApp';
 import { ThemesApp } from './apps/ThemesApp';
+import { SettingsApp } from './apps/SettingsApp';
 import { RetroApp } from './apps/RetroApp';
 import { ClipsApp } from './apps/ClipsApp';
 import { GlobalChatApp } from './apps/GlobalChatApp';
@@ -186,6 +187,18 @@ export default function App() {
             onSelectTheme={handleSelectTheme}
             customWallpaper={customWallpaper}
             onSetCustomWallpaper={handleSetCustomWallpaper}
+          />
+        );
+      case 'settings':
+        return (
+          <SettingsApp
+            currentTheme={currentTheme}
+            onSelectTheme={handleSelectTheme}
+            customWallpaper={customWallpaper}
+            onSetCustomWallpaper={handleSetCustomWallpaper}
+            currentCloak={currentCloak}
+            onSelectCloak={setCurrentCloak}
+            onLockScreen={() => setIsLocked(true)}
           />
         );
       case 'retro':

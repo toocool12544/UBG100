@@ -40,4 +40,17 @@ export const safeStorage = {
     }
     delete memoryStore[key];
   },
+
+  clear: (): void => {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        window.localStorage.clear();
+      }
+    } catch {
+      // Storage restricted
+    }
+    for (const key in memoryStore) {
+      delete memoryStore[key];
+    }
+  },
 };
