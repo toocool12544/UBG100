@@ -61,7 +61,7 @@ export const GlobalChatApp: React.FC = () => {
       sender: 'You',
       channel: activeChannel,
       text: inputText.trim(),
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
       avatarColor: 'from-rose-500 to-amber-500',
     };
 
@@ -80,7 +80,7 @@ export const GlobalChatApp: React.FC = () => {
           sender: randomBot,
           channel: activeChannel,
           text: randomText,
-          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
           avatarColor: 'from-teal-500 to-emerald-600',
         },
       ]);

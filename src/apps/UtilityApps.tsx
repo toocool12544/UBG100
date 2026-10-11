@@ -15,11 +15,12 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import { sound } from '../utils/soundEffects';
+import { safeStorage } from '../utils/storage';
 
 /* --- SOLARA ID APP --- */
 export const SolaraIdApp: React.FC = () => {
   const [username, setUsername] = useState<string>(() => {
-    return localStorage.getItem('aurora_username') || 'AuroraGamer#1234';
+    return safeStorage.getItem('aurora_username') || 'AuroraGamer#1234';
   });
   const [avatar, setAvatar] = useState<string>('👾');
 
@@ -35,7 +36,7 @@ export const SolaraIdApp: React.FC = () => {
 
   const handleSave = () => {
     sound.playSoundEffect('levelup');
-    localStorage.setItem('aurora_username', username);
+    safeStorage.setItem('aurora_username', username);
   };
 
   return (

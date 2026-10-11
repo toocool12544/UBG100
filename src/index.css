@@ -6,6 +6,13 @@
     --font-mono: 'JetBrains Mono', monospace;
   }
 
+  html, body, #root {
+    width: 100%;
+    min-height: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
   body {
     font-family: var(--font-sans);
     user-select: none;

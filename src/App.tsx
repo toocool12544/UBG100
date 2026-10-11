@@ -6,6 +6,7 @@ import { WindowFrame } from './components/WindowFrame';
 import { APPS_CATALOG, THEMES_LIST, CLOAK_PRESETS } from './data/appsData';
 import { ThemeId, WindowState, AppDefinition } from './types';
 import { sound } from './utils/soundEffects';
+import { safeStorage } from './utils/storage';
 
 // Apps imports
 import { GamesApp } from './apps/GamesApp';
@@ -37,10 +38,10 @@ export default function App() {
   const [isLocked, setIsLocked] = useState<boolean>(true);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [currentTheme, setCurrentTheme] = useState<ThemeId>(() => {
-    return (localStorage.getItem('aurora_theme') as ThemeId) || 'aurora-blue';
+    return (safeStorage.getItem('aurora_theme') as ThemeId) || 'aurora-blue';
   });
   const [customWallpaper, setCustomWallpaper] = useState<string>(() => {
-    return localStorage.getItem('aurora_wallpaper') || '';
+    return safeStorage.getItem('aurora_wallpaper') || '';
   });
   const [currentCloak, setCurrentCloak] = useState<string>('default');
 
@@ -121,12 +122,12 @@ export default function App() {
 
   const handleSelectTheme = (themeId: ThemeId) => {
     setCurrentTheme(themeId);
-    localStorage.setItem('aurora_theme', themeId);
+    safeStorage.setItem('aurora_theme', themeId);
   };
 
   const handleSetCustomWallpaper = (url: string) => {
     setCustomWallpaper(url);
-    localStorage.setItem('aurora_wallpaper', url);
+    safeStorage.setItem('aurora_wallpaper', url);
   };
 
   // Keyboard panic button (Escape to close active window or lock)

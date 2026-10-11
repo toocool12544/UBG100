@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Play, RotateCcw, Trophy, Sparkles, ExternalLink, Plus, Flame, Gamepad2 } from 'lucide-react';
 import { sound } from '../utils/soundEffects';
+import { safeStorage } from '../utils/storage';
 
 type GameType = '2048' | 'flappy' | 'snake' | 'dino' | 'cookie' | 'pong' | 'embed';
 
@@ -91,7 +92,7 @@ const Game2048: React.FC = () => {
   ]);
   const [score, setScore] = useState<number>(0);
   const [bestScore, setBestScore] = useState<number>(() => {
-    return parseInt(localStorage.getItem('aurora_2048_best') || '0', 10);
+    return parseInt(safeStorage.getItem('aurora_2048_best') || '0', 10);
   });
   const [gameOver, setGameOver] = useState<boolean>(false);
 
@@ -199,7 +200,7 @@ const Game2048: React.FC = () => {
       setScore(newScore);
       if (newScore > bestScore) {
         setBestScore(newScore);
-        localStorage.setItem('aurora_2048_best', newScore.toString());
+        safeStorage.setItem('aurora_2048_best', newScore.toString());
       }
     }
   };
@@ -326,7 +327,7 @@ const FlappyBirdGame: React.FC = () => {
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [score, setScore] = useState<number>(0);
   const [highScore, setHighScore] = useState<number>(() => {
-    return parseInt(localStorage.getItem('aurora_flappy_high') || '0', 10);
+    return parseInt(safeStorage.getItem('aurora_flappy_high') || '0', 10);
   });
   const [isDead, setIsDead] = useState<boolean>(false);
 
@@ -414,7 +415,7 @@ const FlappyBirdGame: React.FC = () => {
             sound.playSoundEffect('coin');
             if (currentScore > highScore) {
               setHighScore(currentScore);
-              localStorage.setItem('aurora_flappy_high', currentScore.toString());
+              safeStorage.setItem('aurora_flappy_high', currentScore.toString());
             }
           }
         });

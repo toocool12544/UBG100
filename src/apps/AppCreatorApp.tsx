@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Code2, Plus, Sparkles, ExternalLink, CheckCircle } from 'lucide-react';
 import { sound } from '../utils/soundEffects';
+import { safeStorage } from '../utils/storage';
 
 interface CustomAppEntry {
   id: string;
@@ -12,8 +13,12 @@ interface CustomAppEntry {
 
 export const AppCreatorApp: React.FC = () => {
   const [customApps, setCustomApps] = useState<CustomAppEntry[]>(() => {
-    const saved = localStorage.getItem('aurora_custom_apps');
-    return saved ? JSON.parse(saved) : [];
+    try {
+      const saved = safeStorage.getItem('aurora_custom_apps');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
   });
   const [name, setName] = useState<string>('');
   const [url, setUrl] = useState<string>('');
@@ -36,7 +41,7 @@ export const AppCreatorApp: React.FC = () => {
 
     const updated = [...customApps, newEntry];
     setCustomApps(updated);
-    localStorage.setItem('aurora_custom_apps', JSON.stringify(updated));
+    safeStorage.setItem('aurora_custom_apps', JSON.stringify(updated));
     setName('');
     setUrl('');
     setSuccess(true);
@@ -47,7 +52,7 @@ export const AppCreatorApp: React.FC = () => {
     sound.playKeypadClick(400);
     const updated = customApps.filter((a) => a.id !== id);
     setCustomApps(updated);
-    localStorage.setItem('aurora_custom_apps', JSON.stringify(updated));
+    safeStorage.setItem('aurora_custom_apps', JSON.stringify(updated));
   };
 
   return (

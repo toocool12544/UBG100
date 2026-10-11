@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Lightbulb, ThumbsUp, Send, Plus, CheckCircle, Sparkles } from 'lucide-react';
 import { sound } from '../utils/soundEffects';
+import { safeStorage } from '../utils/storage';
 
 interface Suggestion {
   id: string;
@@ -53,15 +54,19 @@ const DEFAULT_SUGGESTIONS: Suggestion[] = [
 
 export const SuggestionsApp: React.FC = () => {
   const [suggestions, setSuggestions] = useState<Suggestion[]>(() => {
-    const saved = localStorage.getItem('aurora_suggestions');
-    return saved ? JSON.parse(saved) : DEFAULT_SUGGESTIONS;
+    try {
+      const saved = safeStorage.getItem('aurora_suggestions');
+      return saved ? JSON.parse(saved) : DEFAULT_SUGGESTIONS;
+    } catch {
+      return DEFAULT_SUGGESTIONS;
+    }
   });
   const [title, setTitle] = useState<string>('');
   const [desc, setDesc] = useState<string>('');
   const [submitted, setSubmitted] = useState<boolean>(false);
 
   useEffect(() => {
-    localStorage.setItem('aurora_suggestions', JSON.stringify(suggestions));
+    safeStorage.setItem('aurora_suggestions', JSON.stringify(suggestions));
   }, [suggestions]);
 
   const handleVote = (id: string) => {

@@ -16,6 +16,7 @@ import {
   Check,
 } from 'lucide-react';
 import { sound } from '../utils/soundEffects';
+import { safeStorage } from '../utils/storage';
 
 /* --- FAKE MEET SIMULATOR --- */
 export const MeetApp: React.FC = () => {
@@ -202,14 +203,14 @@ export const InboxApp: React.FC = () => {
 export const NotepadApp: React.FC = () => {
   const [content, setContent] = useState<string>(() => {
     return (
-      localStorage.getItem('aurora_notepad') ||
+      safeStorage.getItem('aurora_notepad') ||
       '# AuroraOS Scratchpad\n\n- Unblocked games are working smoothly.\n- Password set to: 1234\n- Remember to complete chemistry homework by 4 PM!'
     );
   });
   const [copied, setCopied] = useState<boolean>(false);
 
   useEffect(() => {
-    localStorage.setItem('aurora_notepad', content);
+    safeStorage.setItem('aurora_notepad', content);
   }, [content]);
 
   const disguiseAsEssay = () => {

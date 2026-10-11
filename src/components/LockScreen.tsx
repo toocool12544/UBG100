@@ -86,12 +86,25 @@ export const LockScreen: React.FC<LockScreenProps> = ({ onUnlock }) => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleDigit, handleDelete, handleClear, pin]);
 
-  const timeString = currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  const dateString = currentTime.toLocaleDateString('en-US', {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-  });
+  const timeString = (() => {
+    try {
+      return currentTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    } catch {
+      return currentTime.toTimeString().slice(0, 5);
+    }
+  })();
+
+  const dateString = (() => {
+    try {
+      return currentTime.toLocaleDateString('en-US', {
+        weekday: 'long',
+        month: 'long',
+        day: 'numeric',
+      });
+    } catch {
+      return currentTime.toDateString();
+    }
+  })();
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-between p-6 sm:p-10 select-none overflow-hidden bg-slate-950">

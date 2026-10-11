@@ -45,12 +45,17 @@ export const TopBar: React.FC<TopBarProps> = ({
   useEffect(() => {
     const updateTime = () => {
       const now = new Date();
-      setCurrentTime(
-        now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true })
-      );
-      setCurrentDate(
-        now.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' })
-      );
+      try {
+        setCurrentTime(
+          now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
+        );
+        setCurrentDate(
+          now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+        );
+      } catch {
+        setCurrentTime(now.toTimeString().slice(0, 5));
+        setCurrentDate(now.toDateString().slice(0, 10));
+      }
     };
     updateTime();
     const interval = setInterval(updateTime, 1000);
