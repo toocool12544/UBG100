@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Lock, Unlock, Delete, RotateCcw, ShieldCheck, KeyRound } from 'lucide-react';
+import { Lock, Unlock, Delete, RotateCcw, ShieldCheck } from 'lucide-react';
 import { sound } from '../utils/soundEffects';
 import { safeStorage } from '../utils/storage';
 
@@ -12,7 +12,6 @@ export const LockScreen: React.FC<LockScreenProps> = ({ onUnlock }) => {
   const [error, setError] = useState<boolean>(false);
   const [isUnlocked, setIsUnlocked] = useState<boolean>(false);
   const [currentTime, setCurrentTime] = useState<Date>(new Date());
-  const [hintVisible, setHintVisible] = useState<boolean>(true);
 
   // Update clock every second
   useEffect(() => {
@@ -60,15 +59,6 @@ export const LockScreen: React.FC<LockScreenProps> = ({ onUnlock }) => {
     setPin('');
     setError(false);
   }, []);
-
-  const handleQuickUnlock = () => {
-    setPin('1234');
-    sound.playSuccess();
-    setIsUnlocked(true);
-    setTimeout(() => {
-      onUnlock();
-    }, 350);
-  };
 
   // Physical keyboard support
   useEffect(() => {
@@ -213,20 +203,6 @@ export const LockScreen: React.FC<LockScreenProps> = ({ onUnlock }) => {
             <Delete className="w-5 h-5 text-slate-300" />
           </button>
         </div>
-
-        {/* Quick Unlock Badge */}
-        {hintVisible && (
-          <div className="mt-5 flex flex-col items-center">
-            <button
-              onClick={handleQuickUnlock}
-              className="px-3.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-400 hover:text-slate-200 text-xs flex items-center gap-1.5 backdrop-blur-md transition-all active:scale-95 cursor-pointer"
-              title="Quick unlock for authorized user"
-            >
-              <KeyRound className="w-3.5 h-3.5 text-slate-400" />
-              <span>Quick Unlock</span>
-            </button>
-          </div>
-        )}
       </div>
 
       {/* Footer info */}

@@ -74,14 +74,6 @@ export const APPS_CATALOG: AppDefinition[] = [
     category: 'utility',
     gradient: 'from-slate-700 via-slate-800 to-slate-900',
   },
-  {
-    id: 'for-dad',
-    name: 'For Dad',
-    subtitle: 'Monkey Surprise',
-    iconType: 'monkey',
-    category: 'media',
-    gradient: 'from-amber-500 via-orange-600 to-yellow-600',
-  },
 
   // ROW 2
   {
