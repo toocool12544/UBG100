@@ -108,6 +108,13 @@ export const LockScreen: React.FC<LockScreenProps> = ({ onUnlock }) => {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(2,6,23,0.7)_100%)]" />
       </div>
 
+      {/* Top Right Credit Text */}
+      <div className="absolute top-4 right-4 sm:top-6 sm:right-8 z-30 select-none">
+        <span className="text-xs font-medium text-sky-200/90 tracking-wide">
+          made by Zahid  heres the proof
+        </span>
+      </div>
+
       {/* Top Header: Clock & Date */}
       <div className="relative z-10 flex flex-col items-center text-center mt-2 sm:mt-6 animate-in fade-in duration-500">
         <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-sky-500/10 border border-sky-400/20 backdrop-blur-md mb-3 text-sky-300 text-xs font-medium">
