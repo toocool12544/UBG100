@@ -10,31 +10,20 @@ import { safeStorage } from './utils/storage';
 
 // Apps imports
 import { GamesApp } from './apps/GamesApp';
-import { CineraApp } from './apps/CineraApp';
-import { Mp3PlayerApp } from './apps/Mp3PlayerApp';
-import { JsExecutorApp } from './apps/JsExecutorApp';
-import { SuggestionsApp } from './apps/SuggestionsApp';
-import { CameraApp } from './apps/CameraApp';
-import { CalendarApp } from './apps/CalendarApp';
-import { ThemesApp } from './apps/ThemesApp';
-import { SettingsApp } from './apps/SettingsApp';
-import { RetroApp } from './apps/RetroApp';
-import { ClipsApp } from './apps/ClipsApp';
-import { GlobalChatApp } from './apps/GlobalChatApp';
-import { LinksApp } from './apps/LinksApp';
-import { RobloxApp } from './apps/RobloxApp';
-import { TerminalApp } from './apps/TerminalApp';
-import { SoundboardApp } from './apps/SoundboardApp';
-import { PaintApp } from './apps/PaintApp';
-import { CelesteApp } from './apps/CelesteApp';
-import { CalculatorApp } from './apps/CalculatorApp';
-import { MeetApp, InboxApp, NotepadApp } from './apps/StealthApps';
-import { MoviesApp, TiktokApp, AnimeApp, MusicApp } from './apps/EntertainmentApps';
-import { VoiceApp, ClockApp } from './apps/UtilityApps';
+import { APApp } from './apps/APApp';
+import { sessionManager } from './utils/sessionManager';
 
 export default function App() {
   // Lock screen is active first thing upon entering website (passcode 1234)
   const [isLocked, setIsLocked] = useState<boolean>(true);
+  const [isKickedOut, setIsKickedOut] = useState<boolean>(() => sessionManager.isUserKicked());
+  const [isAdminRoute, setIsAdminRoute] = useState<boolean>(() => {
+    return (
+      window.location.pathname.startsWith('/admin') ||
+      window.location.hash.startsWith('#admin') ||
+      window.location.hash.startsWith('#/admin')
+    );
+  });
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [currentTheme, setCurrentTheme] = useState<ThemeId>(() => {
     return (safeStorage.getItem('aurora_theme') as ThemeId) || 'aurora-blue';
@@ -47,6 +36,41 @@ export default function App() {
   // Open windows state
   const [windows, setWindows] = useState<WindowState[]>([]);
   const [activeWindowId, setActiveWindowId] = useState<string | null>(null);
+
+  // Initialize Real-time Session Tracking & Kick listener
+  useEffect(() => {
+    sessionManager.init();
+
+    const handleForceLogout = () => {
+      setIsKickedOut(true);
+      setTimeout(() => {
+        try {
+          window.location.replace('https://google.com');
+        } catch {
+          window.location.href = 'https://google.com';
+        }
+      }, 400);
+    };
+
+    const handleRouteChange = () => {
+      setIsAdminRoute(
+        window.location.pathname.startsWith('/admin') ||
+        window.location.hash.startsWith('#admin') ||
+        window.location.hash.startsWith('#/admin')
+      );
+    };
+
+    window.addEventListener('aurora:force_logout', handleForceLogout);
+    window.addEventListener('hashchange', handleRouteChange);
+    window.addEventListener('popstate', handleRouteChange);
+
+    return () => {
+      window.removeEventListener('aurora:force_logout', handleForceLogout);
+      window.removeEventListener('hashchange', handleRouteChange);
+      window.removeEventListener('popstate', handleRouteChange);
+      sessionManager.destroy();
+    };
+  }, []);
 
   // Tab cloaking effect
   useEffect(() => {
@@ -166,87 +190,57 @@ export default function App() {
   // App content renderer for active windows
   const renderAppContent = (appId: string) => {
     switch (appId) {
+      case 'ap':
+        return <APApp />;
       case 'games':
-        return <GamesApp />;
-      case 'cinera':
-        return <CineraApp />;
-      case 'mp3-player':
-        return <Mp3PlayerApp />;
-      case 'js-executor':
-        return <JsExecutorApp />;
-      case 'suggestions':
-        return <SuggestionsApp />;
-      case 'camera':
-        return <CameraApp />;
-      case 'calendar':
-        return <CalendarApp />;
-      case 'themes':
-        return (
-          <ThemesApp
-            currentTheme={currentTheme}
-            onSelectTheme={handleSelectTheme}
-            customWallpaper={customWallpaper}
-            onSetCustomWallpaper={handleSetCustomWallpaper}
-          />
-        );
-      case 'settings':
-        return (
-          <SettingsApp
-            currentTheme={currentTheme}
-            onSelectTheme={handleSelectTheme}
-            customWallpaper={customWallpaper}
-            onSetCustomWallpaper={handleSetCustomWallpaper}
-            currentCloak={currentCloak}
-            onSelectCloak={setCurrentCloak}
-            onLockScreen={() => setIsLocked(true)}
-          />
-        );
-      case 'retro':
-        return <RetroApp />;
-      case 'clips':
-        return <ClipsApp />;
-      case 'global-chat':
-        return <GlobalChatApp />;
-      case 'links':
-        return <LinksApp currentCloak={currentCloak} onSelectCloak={setCurrentCloak} />;
-      case 'roblox':
-        return <RobloxApp />;
-      case 'terminal':
-        return <TerminalApp />;
-      case 'soundboard':
-        return <SoundboardApp />;
-      case 'movies':
-        return <MoviesApp />;
-      case 'tiktok':
-        return <TiktokApp />;
-      case 'paint':
-        return <PaintApp />;
-      case 'inbox':
-        return <InboxApp />;
-      case 'meet':
-        return <MeetApp />;
-      case 'calculator':
-        return <CalculatorApp />;
-      case 'celeste':
-        return <CelesteApp />;
-      case 'anime':
-        return <AnimeApp />;
-      case 'music':
-        return <MusicApp />;
-      case 'notepad':
-        return <NotepadApp />;
-      case 'voice':
-        return <VoiceApp />;
-      case 'clock':
-        return <ClockApp />;
       default:
-        return (
-          <div className="p-8 text-center text-slate-400">
-            Application ready. Launching module...
-          </div>
-        );
+        return <GamesApp />;
     }
   };
+
+  // 4. User Reaction: completely block page layout when FORCE_LOGOUT is received
+  if (isKickedOut) {
+    return (
+      <div className="fixed inset-0 z-[9999999] bg-black text-red-500 flex flex-col items-center justify-center p-6 text-center font-mono select-none">
+        <div className="max-w-md p-8 border-2 border-red-500 rounded-2xl bg-red-950/30 shadow-[0_0_60px_rgba(239,68,68,0.6)]">
+          <div className="text-5xl mb-4 animate-bounce">⛔</div>
+          <h1 className="text-2xl font-black text-white tracking-widest mb-2">FORCE LOGOUT</h1>
+          <p className="text-sm text-red-300 mb-6 leading-relaxed">
+            Your session has been terminated by the administrator. Layout completely blocked.
+          </p>
+          <div className="inline-block px-5 py-2.5 rounded-xl bg-red-600 text-white font-bold text-xs uppercase tracking-wider animate-pulse">
+            REDIRECTING TO GOOGLE...
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 2. Admin Dashboard: Private /admin route
+  if (isAdminRoute) {
+    return (
+      <div className="fixed inset-0 z-50 bg-slate-950 flex flex-col select-none">
+        <div className="h-10 bg-slate-900/90 border-b border-red-500/20 px-4 flex items-center justify-between text-xs backdrop-blur-xl">
+          <span className="font-mono text-red-400 font-bold tracking-wider flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+            <span>PRIVATE ROUTE: /admin (Session Management)</span>
+          </span>
+          <button
+            onClick={() => {
+              window.location.hash = '';
+              setIsAdminRoute(false);
+            }}
+            className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/15 text-slate-300 hover:text-white transition-colors cursor-pointer"
+          >
+            Exit /admin
+          </button>
+        </div>
+        <div className="flex-1 overflow-auto">
+          <APApp />
+        </div>
+      </div>
+    );
+  }
 
   // If locked, render LockScreen first!
   if (isLocked) {
@@ -306,19 +300,26 @@ export default function App() {
 
       {/* Main Launchpad Grid matching the screenshot layout */}
       <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 sm:px-8 md:px-12 py-6 max-w-7xl mx-auto w-full">
-        {/* App Icons Grid */}
-        <div className="w-full grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-y-7 gap-x-2 sm:gap-x-4 place-items-center my-auto transition-all duration-300">
+        {/* App Icon with big text next to it */}
+        <div className="my-auto flex flex-col md:flex-row items-center justify-center gap-6 sm:gap-10 p-6 sm:p-10 rounded-3xl bg-slate-900/40 border border-white/10 backdrop-blur-xl shadow-2xl max-w-4xl">
           {filteredApps.map((app) => {
             const isOpen = windows.some((w) => w.appId === app.id);
             return (
-              <AppIcon
-                key={app.id}
-                app={app}
-                onClick={openApp}
-                isOpen={isOpen}
-              />
+              <div key={app.id} className="shrink-0">
+                <AppIcon
+                  app={app}
+                  onClick={openApp}
+                  isOpen={isOpen}
+                />
+              </div>
             );
           })}
+
+          <div className="text-center md:text-left">
+            <h1 className="text-3xl sm:text-5xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-sky-300 via-cyan-100 to-indigo-300 drop-shadow-[0_2px_15px_rgba(56,189,248,0.4)] tracking-tight leading-tight">
+              Bahir is a idiot type67 heres your proof lil bro
+            </h1>
+          </div>
         </div>
 
         {filteredApps.length === 0 && (

@@ -5,7 +5,6 @@ import {
   VolumeX,
   Maximize2,
   Minimize2,
-  Lock,
   EyeOff,
   Sparkles,
   Wifi,
@@ -85,9 +84,9 @@ export const TopBar: React.FC<TopBarProps> = ({
       {/* Left: Brand + Quick Cloak + Open Windows */}
       <div className="flex items-center gap-3">
         <div
-          onClick={() => onOpenApp('themes')}
+          onClick={() => onOpenApp('games')}
           className="flex items-center gap-2 cursor-pointer group"
-          title="Click to change Aurora Theme"
+          title="Click to open Games"
         >
           <div className="w-6 h-6 rounded-lg bg-gradient-to-tr from-sky-500 to-cyan-300 flex items-center justify-center shadow-[0_0_10px_#38bdf8] group-hover:scale-105 transition-transform">
             <Sparkles className="w-3.5 h-3.5 text-slate-950" />
@@ -149,7 +148,7 @@ export const TopBar: React.FC<TopBarProps> = ({
             type="text"
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            placeholder="Search 31 unblocked games & apps..."
+            placeholder="Search games & apps..."
             className="w-full h-7 pl-8 pr-7 rounded-full bg-white/10 hover:bg-white/15 focus:bg-slate-900/90 border border-white/15 focus:border-sky-400 text-xs text-white placeholder-slate-400 transition-all focus:outline-none"
           />
           {searchQuery && (
@@ -197,16 +196,6 @@ export const TopBar: React.FC<TopBarProps> = ({
           <span className="hidden sm:inline text-slate-400">{currentDate}</span>
           <span>{currentTime}</span>
         </div>
-
-        {/* Lock Button */}
-        <button
-          onClick={onLock}
-          className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/30 text-rose-300 font-medium text-[11px] transition-all cursor-pointer active:scale-95"
-          title="Lock Screen (Requires 1234)"
-        >
-          <Lock className="w-3 h-3" />
-          <span className="hidden sm:inline">Lock</span>
-        </button>
       </div>
     </header>
   );
