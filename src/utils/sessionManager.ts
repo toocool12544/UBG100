@@ -9,6 +9,7 @@ export interface UserSessionData {
   connectedAt: number;
   lastPing: number;
   isKicked: boolean;
+  isAdmin?: boolean;
   currentRoute?: string;
 }
 
@@ -20,6 +21,7 @@ class SessionManager {
   private pingInterval: NodeJS.Timeout | null = null;
   private sessionCallbacks: Set<(sessions: UserSessionData[]) => void> = new Set();
   private isKicked = false;
+  private isAdmin = false;
 
   constructor() {
     // 1. Assign or restore unique sessionId
@@ -51,9 +53,15 @@ class SessionManager {
       }
     }
 
-    // 4. Check if already marked kicked
-    if (safeStorage.getItem('aurora_kicked_status') === 'true') {
-      this.executeForceLogout('Previously kicked from session');
+    // Clean up any stale kick markers so users can return freely
+    safeStorage.removeItem('aurora_kicked_status');
+
+    // Restore Admin status if user authenticated previously
+    if (safeStorage.getItem('aurora_is_admin') === 'true') {
+      this.isAdmin = true;
+      if (this.guestName.startsWith('Guest_')) {
+        this.guestName = this.guestName.replace('Guest_', 'Admin_');
+      }
     }
   }
 
@@ -203,7 +211,9 @@ class SessionManager {
     if (this.isKicked) return;
     this.isKicked = true;
 
-    safeStorage.setItem('aurora_kicked_status', 'true');
+    // Clear session so when user comes back, they get a clean session and are not permanently blocked
+    safeStorage.removeItem('aurora_session_id');
+    safeStorage.removeItem('aurora_kicked_status');
 
     // Notify listeners / React components
     window.dispatchEvent(
@@ -306,6 +316,49 @@ class SessionManager {
       return res.ok;
     } catch {
       return false;
+    }
+  }
+
+  public isUserAdmin(): boolean {
+    return this.isAdmin;
+  }
+
+  // The people who go into the app and knows the passwords become admin when they enter password
+  public async promoteToAdmin(password: string): Promise<boolean> {
+    const valid = ['1234', 'admin', 'zahid'];
+    const isValidPassword = valid.includes(password.trim());
+    if (!isValidPassword) return false;
+
+    this.isAdmin = true;
+    if (this.guestName.startsWith('Guest_')) {
+      this.guestName = this.guestName.replace('Guest_', 'Admin_');
+      safeStorage.setItem('aurora_guest_name', this.guestName);
+    }
+    safeStorage.setItem('aurora_is_admin', 'true');
+
+    // Notify other tabs
+    if (this.channel) {
+      try {
+        this.channel.postMessage({
+          type: 'ADMIN_PROMOTION',
+          sessionId: this.sessionId,
+          guestName: this.guestName,
+        });
+      } catch {}
+    }
+
+    try {
+      const res = await fetch('/api/realtime/promote-admin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sessionId: this.sessionId,
+          password,
+        }),
+      });
+      return res.ok;
+    } catch {
+      return true;
     }
   }
 

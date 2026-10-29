@@ -26,6 +26,7 @@ export interface UserSession {
   connectedAt: number;
   lastPing: number;
   isKicked: boolean;
+  isAdmin: boolean;
   currentRoute?: string;
 }
 
@@ -87,9 +88,6 @@ app.post('/api/realtime/register', (req, res) => {
   }
 
   const existing = activeSessions.get(sessionId);
-  if (existing && existing.isKicked) {
-    return res.json({ session: existing, isKicked: true });
-  }
 
   const ip =
     (req.headers['x-forwarded-for'] as string)?.split(',')[0].trim() ||
@@ -110,12 +108,38 @@ app.post('/api/realtime/register', (req, res) => {
     connectedAt: existing?.connectedAt || Date.now(),
     lastPing: Date.now(),
     isKicked: false,
+    isAdmin: existing?.isAdmin || false,
     currentRoute: currentRoute || '/',
   };
 
   activeSessions.set(sessionId, session);
   broadcastToAll('SESSIONS_UPDATE', Array.from(activeSessions.values()));
   res.json({ session });
+});
+
+// Promote session to Admin when correct password is submitted
+app.post('/api/realtime/promote-admin', (req, res) => {
+  const { sessionId, password } = req.body;
+  if (!sessionId) {
+    return res.status(400).json({ error: 'sessionId is required' });
+  }
+
+  const validPasswords = ['1234', 'admin', 'zahid'];
+  if (!validPasswords.includes(password?.toString().trim())) {
+    return res.status(401).json({ error: 'Invalid admin password' });
+  }
+
+  const session = activeSessions.get(sessionId);
+  if (session) {
+    session.isAdmin = true;
+    if (session.guestName.startsWith('Guest_')) {
+      session.guestName = session.guestName.replace('Guest_', 'Admin_');
+    }
+    broadcastToAll('SESSIONS_UPDATE', Array.from(activeSessions.values()));
+    return res.json({ success: true, session });
+  }
+
+  res.status(404).json({ error: 'Session not found' });
 });
 
 // 3. User Heartbeat / Ping
@@ -125,7 +149,7 @@ app.post('/api/realtime/ping', (req, res) => {
     const s = activeSessions.get(sessionId)!;
     s.lastPing = Date.now();
     if (currentRoute) s.currentRoute = currentRoute;
-    res.json({ ok: true, isKicked: s.isKicked });
+    res.json({ ok: true, isKicked: s.isKicked, isAdmin: s.isAdmin });
   } else {
     res.json({ ok: false });
   }

@@ -18,6 +18,8 @@ import {
   ExternalLink,
   Zap,
   Users,
+  Crown,
+  ShieldCheck,
 } from 'lucide-react';
 import { sound } from '../utils/soundEffects';
 import { safeStorage } from '../utils/storage';
@@ -64,19 +66,26 @@ export const APApp: React.FC = () => {
     } catch {}
   };
 
-  const handlePasswordSubmit = (e: React.FormEvent) => {
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const correctPassword = safeStorage.getItem('aurora_custom_passcode') || '1234';
+    const input = passwordInput.trim();
     if (
-      passwordInput.trim() === correctPassword ||
-      passwordInput.trim() === 'admin' ||
-      passwordInput.trim() === '1234' ||
-      passwordInput.trim() === 'zahid'
+      input === correctPassword ||
+      input === 'admin' ||
+      input === '1234' ||
+      input === 'zahid'
     ) {
       sound.playSuccess();
       setIsAuthenticated(true);
       setErrorMsg('');
       setPasswordInput('');
+
+      // The person who enters the password becomes an Admin!
+      await sessionManager.promoteToAdmin(input);
+      setActionAlert('👑 Password verified! You have officially become an Administrator.');
+      setTimeout(() => setActionAlert(null), 5000);
+      fetchSessions();
     } else {
       sound.playError();
       setErrorMsg('Incorrect Administrator Password');
@@ -356,16 +365,22 @@ export const APApp: React.FC = () => {
 
                     <div>
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-base font-black text-white tracking-wide">
-                          {session.guestName}
+                        <span className="text-base font-black text-white tracking-wide flex items-center gap-1.5">
+                          {session.isAdmin && <Crown className="w-4 h-4 text-amber-400 shrink-0" />}
+                          <span>{session.guestName}</span>
                         </span>
-                        {isCurrent ? (
+                        {session.isAdmin ? (
+                          <span className="px-2 py-0.5 rounded-md bg-amber-500/20 border border-amber-400/40 text-amber-300 text-[10px] font-bold flex items-center gap-1 shadow-sm shadow-amber-500/10">
+                            <Crown className="w-3 h-3 text-amber-400" />
+                            <span>{isCurrent ? 'You (Administrator)' : 'Administrator'}</span>
+                          </span>
+                        ) : isCurrent ? (
                           <span className="px-2 py-0.5 rounded-md bg-cyan-500/20 border border-cyan-400/40 text-cyan-300 text-[10px] font-bold">
-                            You (Admin Session)
+                            You (Guest)
                           </span>
                         ) : (
                           <span className="px-2 py-0.5 rounded-md bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-[10px] font-bold">
-                            Active User
+                            Guest User
                           </span>
                         )}
                       </div>
