@@ -99,7 +99,7 @@ export const LockScreen: React.FC<LockScreenProps> = ({ onUnlock }) => {
   })();
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-between p-6 sm:p-10 select-none overflow-hidden bg-slate-950">
+    <div className="fixed inset-0 z-50 flex flex-col items-center justify-between p-6 sm:p-10 select-none overflow-hidden bg-slate-950/80 backdrop-blur-sm">
       {/* Background Aurora Lighting Effect */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div className="absolute -top-[20%] -left-[10%] w-[70vw] h-[70vw] rounded-full bg-cyan-500/20 blur-[130px] animate-aurora-1" />

@@ -7,6 +7,15 @@ class SoundEngine {
   private ctx: AudioContext | null = null;
   public isMuted: boolean = false;
 
+  toggleMute(): boolean {
+    this.isMuted = !this.isMuted;
+    return this.isMuted;
+  }
+
+  getMuted(): boolean {
+    return this.isMuted;
+  }
+
   private getContext(): AudioContext | null {
     if (this.isMuted) return null;
     if (typeof window === 'undefined') return null;

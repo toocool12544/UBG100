@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { LockScreen } from './components/LockScreen';
+import { ParticleConstellation } from './components/ParticleConstellation';
 import { TopBar } from './components/TopBar';
 import { AppIcon } from './components/AppIcon';
 import { WindowFrame } from './components/WindowFrame';
@@ -11,6 +12,27 @@ import { safeStorage } from './utils/storage';
 // Apps imports
 import { GamesApp } from './apps/GamesApp';
 import { APApp } from './apps/APApp';
+import { CineraApp } from './apps/CineraApp';
+import { Mp3PlayerApp } from './apps/Mp3PlayerApp';
+import { JsExecutorApp } from './apps/JsExecutorApp';
+import { SuggestionsApp } from './apps/SuggestionsApp';
+import { CameraApp } from './apps/CameraApp';
+import { CalendarApp } from './apps/CalendarApp';
+import { ThemesApp } from './apps/ThemesApp';
+import { SettingsApp } from './apps/SettingsApp';
+import { RetroApp } from './apps/RetroApp';
+import { ClipsApp } from './apps/ClipsApp';
+import { GlobalChatApp } from './apps/GlobalChatApp';
+import { LinksApp } from './apps/LinksApp';
+import { RobloxApp } from './apps/RobloxApp';
+import { TerminalApp } from './apps/TerminalApp';
+import { SoundboardApp } from './apps/SoundboardApp';
+import { PaintApp } from './apps/PaintApp';
+import { CelesteApp } from './apps/CelesteApp';
+import { CalculatorApp } from './apps/CalculatorApp';
+import { MeetApp, InboxApp, NotepadApp } from './apps/StealthApps';
+import { MoviesApp, TiktokApp, AnimeApp, MusicApp } from './apps/EntertainmentApps';
+import { VoiceApp, ClockApp } from './apps/UtilityApps';
 import { sessionManager } from './utils/sessionManager';
 
 export default function App() {
@@ -193,6 +215,78 @@ export default function App() {
       case 'ap':
         return <APApp />;
       case 'games':
+        return <GamesApp />;
+      case 'cinera':
+        return <CineraApp />;
+      case 'mp3-player':
+        return <Mp3PlayerApp />;
+      case 'js-executor':
+        return <JsExecutorApp />;
+      case 'suggestions':
+        return <SuggestionsApp />;
+      case 'camera':
+        return <CameraApp />;
+      case 'calendar':
+        return <CalendarApp />;
+      case 'themes':
+        return (
+          <ThemesApp
+            currentTheme={currentTheme}
+            onSelectTheme={handleSelectTheme}
+            customWallpaper={customWallpaper}
+            onSetCustomWallpaper={handleSetCustomWallpaper}
+          />
+        );
+      case 'settings':
+        return (
+          <SettingsApp
+            currentTheme={currentTheme}
+            onSelectTheme={handleSelectTheme}
+            customWallpaper={customWallpaper}
+            onSetCustomWallpaper={handleSetCustomWallpaper}
+            currentCloak={currentCloak}
+            onSelectCloak={setCurrentCloak}
+            onLockScreen={() => setIsLocked(true)}
+          />
+        );
+      case 'retro':
+        return <RetroApp />;
+      case 'clips':
+        return <ClipsApp />;
+      case 'global-chat':
+        return <GlobalChatApp />;
+      case 'links':
+        return <LinksApp currentCloak={currentCloak} onSelectCloak={setCurrentCloak} />;
+      case 'roblox':
+        return <RobloxApp />;
+      case 'terminal':
+        return <TerminalApp />;
+      case 'soundboard':
+        return <SoundboardApp />;
+      case 'movies':
+        return <MoviesApp />;
+      case 'tiktok':
+        return <TiktokApp />;
+      case 'paint':
+        return <PaintApp />;
+      case 'inbox':
+        return <InboxApp />;
+      case 'meet':
+        return <MeetApp />;
+      case 'calculator':
+        return <CalculatorApp />;
+      case 'celeste':
+        return <CelesteApp />;
+      case 'anime':
+        return <AnimeApp />;
+      case 'music':
+        return <MusicApp />;
+      case 'notepad':
+        return <NotepadApp />;
+      case 'voice':
+        return <VoiceApp />;
+      case 'clock':
+        return <ClockApp />;
       default:
         return <GamesApp />;
     }
@@ -219,7 +313,8 @@ export default function App() {
   // 2. Admin Dashboard: Private /admin route
   if (isAdminRoute) {
     return (
-      <div className="fixed inset-0 z-50 bg-slate-950 flex flex-col select-none">
+      <div className="fixed inset-0 z-50 bg-slate-950/90 flex flex-col select-none">
+        <ParticleConstellation />
         <div className="h-10 bg-slate-900/90 border-b border-red-500/20 px-4 flex items-center justify-between text-xs backdrop-blur-xl">
           <span className="font-mono text-red-400 font-bold tracking-wider flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
@@ -242,26 +337,34 @@ export default function App() {
     );
   }
 
-  // If locked, render LockScreen first!
+  // If locked, render LockScreen with particle constellation background!
   if (isLocked) {
-    return <LockScreen onUnlock={() => setIsLocked(false)} />;
+    return (
+      <>
+        <ParticleConstellation />
+        <LockScreen onUnlock={() => setIsLocked(false)} />
+      </>
+    );
   }
 
   return (
     <div
-      className={`min-h-screen w-full relative flex flex-col overflow-x-hidden select-none bg-slate-950 ${
+      className={`min-h-screen w-full relative flex flex-col overflow-x-hidden select-none bg-slate-950/80 ${
         customWallpaper ? 'bg-cover bg-center' : ''
       }`}
       style={{
         backgroundImage: customWallpaper ? `url("${customWallpaper}")` : undefined,
       }}
     >
+      {/* Full-screen animated particle constellation & starfield canvas (z-index: -1) */}
+      <ParticleConstellation />
+
       {/* Dynamic Aurora Waves Backdrop */}
       {!customWallpaper && (
         <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-          {/* Base gradient */}
+          {/* Base gradient with transparency so stars & constellations shine through */}
           <div
-            className={`absolute inset-0 bg-gradient-to-b ${themeConfig.gradient} opacity-95 transition-all duration-700`}
+            className={`absolute inset-0 bg-gradient-to-b ${themeConfig.gradient} opacity-80 transition-all duration-700`}
           />
 
           {/* Animated Aurora Light Waves */}
@@ -298,28 +401,21 @@ export default function App() {
         onSelectCloak={setCurrentCloak}
       />
 
-      {/* Main Launchpad Grid matching the screenshot layout */}
+      {/* Main Launchpad Grid */}
       <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 sm:px-8 md:px-12 py-6 max-w-7xl mx-auto w-full">
-        {/* App Icon with big text next to it */}
-        <div className="my-auto flex flex-col md:flex-row items-center justify-center gap-6 sm:gap-10 p-6 sm:p-10 rounded-3xl bg-slate-900/40 border border-white/10 backdrop-blur-xl shadow-2xl max-w-4xl">
+        {/* App Icons Grid */}
+        <div className="w-full grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-y-7 gap-x-2 sm:gap-x-4 place-items-center my-auto transition-all duration-300">
           {filteredApps.map((app) => {
             const isOpen = windows.some((w) => w.appId === app.id);
             return (
-              <div key={app.id} className="shrink-0">
-                <AppIcon
-                  app={app}
-                  onClick={openApp}
-                  isOpen={isOpen}
-                />
-              </div>
+              <AppIcon
+                key={app.id}
+                app={app}
+                onClick={openApp}
+                isOpen={isOpen}
+              />
             );
           })}
-
-          <div className="text-center md:text-left">
-            <h1 className="text-3xl sm:text-5xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-sky-300 via-cyan-100 to-indigo-300 drop-shadow-[0_2px_15px_rgba(56,189,248,0.4)] tracking-tight leading-tight">
-              Bahir is a idiot type67 heres your proof lil bro
-            </h1>
-          </div>
         </div>
 
         {filteredApps.length === 0 && (
