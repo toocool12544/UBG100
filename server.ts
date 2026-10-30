@@ -1,6 +1,7 @@
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import mqtt from 'mqtt';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -33,6 +34,51 @@ export interface UserSession {
 // In-memory real-time state database
 const activeSessions = new Map<string, UserSession>();
 const sseClients = new Map<string, express.Response>();
+
+// Public Live Database Broker Integration
+const APPLET_ID = '0454c44b';
+const MQTT_BROKER_URL = 'wss://broker.emqx.io:8084/mqtt';
+const TOPIC_PRESENCE_WILDCARD = `auroraos/${APPLET_ID}/presence/+`;
+const TOPIC_KICK = `auroraos/${APPLET_ID}/kick`;
+
+let mqttServerClient: mqtt.MqttClient | null = null;
+try {
+  mqttServerClient = mqtt.connect(MQTT_BROKER_URL, {
+    clientId: `aurora_server_${Date.now()}`,
+    clean: true,
+  });
+
+  mqttServerClient.on('connect', () => {
+    console.log('[Server Live State] Connected to public realtime broker');
+    mqttServerClient?.subscribe([TOPIC_PRESENCE_WILDCARD, TOPIC_KICK]);
+  });
+
+  mqttServerClient.on('message', (topic, message) => {
+    try {
+      const data = JSON.parse(message.toString());
+      if (topic.startsWith(`auroraos/${APPLET_ID}/presence/`)) {
+        const sid = topic.replace(`auroraos/${APPLET_ID}/presence/`, '');
+        if (data.status === 'offline') {
+          activeSessions.delete(sid);
+        } else {
+          activeSessions.set(sid, {
+            sessionId: sid,
+            guestName: data.guestName || `Guest_${sid.slice(-3)}`,
+            ip: data.ip || 'Remote Device',
+            userAgent: data.userAgent || 'Web Client',
+            deviceType: data.deviceType || 'phone',
+            connectedAt: data.connectedAt || Date.now(),
+            lastPing: Date.now(),
+            isKicked: data.isKicked || false,
+            isAdmin: data.isAdmin || false,
+            currentRoute: data.currentRoute || '/',
+          });
+        }
+        broadcastToAll('SESSIONS_UPDATE', Array.from(activeSessions.values()));
+      }
+    } catch {}
+  });
+} catch {}
 
 // Broadcast to all active clients (e.g. admins monitoring the user list)
 function broadcastToAll(eventType: string, data: unknown) {
@@ -198,6 +244,18 @@ app.post('/api/realtime/kick', (req, res) => {
     redirectUrl: 'https://google.com',
   });
 
+  // Broadcast to global public MQTT network
+  if (mqttServerClient && mqttServerClient.connected) {
+    mqttServerClient.publish(
+      TOPIC_KICK,
+      JSON.stringify({
+        type: 'FORCE_LOGOUT',
+        targetSessionId: sessionId,
+        timestamp: Date.now(),
+      })
+    );
+  }
+
   // 2. Broadcast updated session list to all admins
   broadcastToAll('SESSIONS_UPDATE', Array.from(activeSessions.values()));
 
@@ -217,6 +275,18 @@ app.post('/api/realtime/kick-all', (req, res) => {
       });
     }
   }
+
+  if (mqttServerClient && mqttServerClient.connected) {
+    mqttServerClient.publish(
+      TOPIC_KICK,
+      JSON.stringify({
+        type: 'FORCE_LOGOUT',
+        targetSessionId: 'ALL',
+        timestamp: Date.now(),
+      })
+    );
+  }
+
   broadcastToAll('SESSIONS_UPDATE', Array.from(activeSessions.values()));
   res.json({ success: true });
 });

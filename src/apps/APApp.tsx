@@ -37,34 +37,24 @@ export const APApp: React.FC = () => {
   const currentSessionId = sessionManager.getSessionId();
   const currentGuestName = sessionManager.getGuestName();
 
-  // Load and subscribe to real-time session updates
+  // Load and subscribe to real-time session updates from public live database
   useEffect(() => {
-    // Initial fetch from server
-    fetchSessions();
+    // Immediate local snapshot
+    setLiveSessions(sessionManager.getSessionsList());
 
-    // Subscribe to live SSE/BroadcastChannel updates
+    // Subscribe to live public database stream
     const unsubscribe = sessionManager.onSessionsUpdate((sessions) => {
       setLiveSessions(sessions);
     });
 
-    const interval = setInterval(fetchSessions, 5000);
+    // Request active devices on all networks to ping immediately
+    sessionManager.requestPingsFromAll();
+    sessionManager.broadcastHeartbeat();
+
     return () => {
       unsubscribe();
-      clearInterval(interval);
     };
   }, []);
-
-  const fetchSessions = async () => {
-    try {
-      const res = await fetch('/api/realtime/sessions');
-      if (res.ok) {
-        const data = await res.json();
-        if (Array.isArray(data.sessions)) {
-          setLiveSessions(data.sessions);
-        }
-      }
-    } catch {}
-  };
 
   const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -85,7 +75,7 @@ export const APApp: React.FC = () => {
       await sessionManager.promoteToAdmin(input);
       setActionAlert('👑 Password verified! You have officially become an Administrator.');
       setTimeout(() => setActionAlert(null), 5000);
-      fetchSessions();
+      setLiveSessions(sessionManager.getSessionsList());
     } else {
       sound.playError();
       setErrorMsg('Incorrect Administrator Password');
@@ -248,17 +238,21 @@ export const APApp: React.FC = () => {
             </button>
 
             <button
-              onClick={async () => {
+              onClick={() => {
                 setIsRefreshing(true);
                 sound.playKeypadClick(500);
-                await fetchSessions();
-                setTimeout(() => setIsRefreshing(false), 600);
+                sessionManager.requestPingsFromAll();
+                sessionManager.broadcastHeartbeat();
+                setTimeout(() => {
+                  setLiveSessions(sessionManager.getSessionsList());
+                  setIsRefreshing(false);
+                }, 500);
               }}
               className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-slate-200 text-xs font-semibold transition-all cursor-pointer border border-white/10"
-              title="Refresh sessions from server"
+              title="Ping and scan all online devices globally"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
-              <span>Refresh</span>
+              <span>Ping All Devices</span>
             </button>
 
             <button
