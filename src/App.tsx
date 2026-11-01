@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { LockScreen } from './components/LockScreen';
 import { ParticleConstellation } from './components/ParticleConstellation';
+import { BlueAuroraCursor } from './components/BlueAuroraCursor';
 import { TopBar } from './components/TopBar';
 import { AppIcon } from './components/AppIcon';
 import { WindowFrame } from './components/WindowFrame';
@@ -337,39 +338,37 @@ export default function App() {
     );
   }
 
-  // If locked, render LockScreen with particle constellation background!
+  // If locked, render LockScreen without custom cursor or matrix background
   if (isLocked) {
-    return (
-      <>
-        <ParticleConstellation />
-        <LockScreen onUnlock={() => setIsLocked(false)} />
-      </>
-    );
+    return <LockScreen onUnlock={() => setIsLocked(false)} />;
   }
 
   return (
     <div
-      className={`min-h-screen w-full relative flex flex-col overflow-x-hidden select-none bg-slate-950/80 ${
+      className={`min-h-screen w-full relative flex flex-col overflow-x-hidden select-none bg-transparent ${
         customWallpaper ? 'bg-cover bg-center' : ''
       }`}
       style={{
         backgroundImage: customWallpaper ? `url("${customWallpaper}")` : undefined,
       }}
     >
-      {/* Full-screen animated particle constellation & starfield canvas (z-index: -1) */}
+      {/* Custom Blue Aurora Animated Mouse Cursor (Enabled after password entry) */}
+      <BlueAuroraCursor />
+
+      {/* Full-screen animated Ocean Aurora Matrix Digital Rain on pure black (Enabled after password entry, z-index: -1) */}
       <ParticleConstellation />
 
-      {/* Dynamic Aurora Waves Backdrop */}
+      {/* Subtle Aurora Ambient Shimmer (transparent so matrix text stands out on pure black) */}
       {!customWallpaper && (
-        <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-          {/* Base gradient with transparency so stars & constellations shine through */}
+        <div className="fixed inset-0 pointer-events-none overflow-hidden z-0 opacity-15">
+          {/* Base subtle glow */}
           <div
-            className={`absolute inset-0 bg-gradient-to-b ${themeConfig.gradient} opacity-80 transition-all duration-700`}
+            className={`absolute inset-0 bg-gradient-to-b ${themeConfig.gradient} opacity-30 transition-all duration-700`}
           />
 
-          {/* Animated Aurora Light Waves */}
+          {/* Soft ambient light waves */}
           <div
-            className="absolute -top-[25%] -left-[15%] w-[85vw] h-[85vw] rounded-full blur-[150px] animate-aurora-1 opacity-70"
+            className="absolute -top-[25%] -left-[15%] w-[85vw] h-[85vw] rounded-full blur-[180px] animate-aurora-1 opacity-40"
             style={{ backgroundColor: themeConfig.accent }}
           />
           <div

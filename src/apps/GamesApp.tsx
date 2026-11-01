@@ -22,6 +22,8 @@ interface GameItem {
   description: string;
   gradient: string;
   tags: string[];
+  sandbox?: string;
+  ariaLabel?: string;
 }
 
 const GAMES_LIST: GameItem[] = [
@@ -37,8 +39,8 @@ const GAMES_LIST: GameItem[] = [
   },
 ];
 
-export const GamesApp: React.FC = () => {
-  const [selectedGameId, setSelectedGameId] = useState<string | null>(null);
+export const GamesApp: React.FC<{ initialGameId?: string }> = ({ initialGameId }) => {
+  const [selectedGameId, setSelectedGameId] = useState<string | null>(initialGameId || null);
   const [iframeKey, setIframeKey] = useState<number>(0);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const gameContainerRef = useRef<HTMLDivElement>(null);
@@ -179,9 +181,15 @@ export const GamesApp: React.FC = () => {
           <iframe
             key={iframeKey}
             src={selectedGame.url}
-            className="w-full h-full min-h-[500px] border-none"
+            className="w-full h-full min-h-[500px] border-none YMEQtf"
             title={selectedGame.title}
+            aria-label={selectedGame.ariaLabel || 'Apps Script'}
+            sandbox={
+              selectedGame.sandbox ||
+              'allow-scripts allow-popups allow-forms allow-same-origin allow-popups-to-escape-sandbox allow-downloads allow-modals allow-storage-access-by-user-activation'
+            }
             allow="accelerometer; autoplay; clipboard-read; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen; cross-origin-isolated; gamepad; compute-pressure; focus-without-user-activation"
+            allowFullScreen
           />
         </div>
 

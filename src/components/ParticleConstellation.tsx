@@ -1,14 +1,26 @@
 import React, { useEffect, useRef } from 'react';
 
-interface Particle {
+// Authentic Matrix Digital Rain with Ocean Aurora Palette
+// Palette: Brilliant cyans (#00f0ff), Deep sky blues (#00a8ff), Vibrant mint greens (#39ff14), Soft teal (#20b2aa / #2dd4bf)
+const AURORA_COLORS = [
+  '#00f0ff', // brilliant cyan
+  '#00a8ff', // deep sky blue
+  '#39ff14', // vibrant mint green
+  '#20b2aa', // soft teal
+  '#2dd4bf', // luminous teal
+  '#00f0ff', // brilliant cyan
+];
+
+const MATRIX_CHARS =
+  'ﾊﾐﾋｰｳｼﾅﾓﾆｻﾜﾂｵﾘｱﾎﾃﾏｹﾒｴｶｷﾑﾕﾗｾﾈｽﾀﾇﾍ0123456789ABCDEF01XYZ:・.=*+-<>¦｜╌~#$@%&';
+
+interface Column {
   x: number;
-  y: number;
-  vx: number;
-  vy: number;
-  radius: number;
-  baseAlpha: number;
-  twinkleSpeed: number;
-  twinkleOffset: number;
+  y: number; // in row units
+  speed: number;
+  length: number;
+  colorOffset: number;
+  chars: string[];
 }
 
 export const ParticleConstellation: React.FC = () => {
@@ -17,13 +29,37 @@ export const ParticleConstellation: React.FC = () => {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext('2d', { alpha: true });
+    const ctx = canvas.getContext('2d', { alpha: false });
     if (!ctx) return;
 
     let animationFrameId: number;
     let width = 0;
     let height = 0;
-    let particles: Particle[] = [];
+    const fontSize = 16;
+    let columns: Column[] = [];
+    let mouseX = -1000;
+    let mouseY = -1000;
+
+    const initColumns = () => {
+      const numCols = Math.ceil(width / fontSize);
+      columns = [];
+      for (let i = 0; i < numCols; i++) {
+        const length = Math.floor(Math.random() * 20) + 12;
+        const colChars: string[] = [];
+        for (let j = 0; j < 50; j++) {
+          colChars.push(MATRIX_CHARS[Math.floor(Math.random() * MATRIX_CHARS.length)]);
+        }
+
+        columns.push({
+          x: i * fontSize,
+          y: Math.floor(Math.random() * -(height / fontSize)), // staggered start
+          speed: Math.random() * 0.4 + 0.65,
+          length,
+          colorOffset: Math.random() * AURORA_COLORS.length,
+          chars: colChars,
+        });
+      }
+    };
 
     const handleResize = () => {
       width = window.innerWidth;
@@ -33,31 +69,16 @@ export const ParticleConstellation: React.FC = () => {
       canvas.height = height * dpr;
       ctx.scale(dpr, dpr);
 
-      // Particle density scaled to screen resolution for optimal performance
-      const count = Math.floor((width * height) / 13000);
-      const clampedCount = Math.max(40, Math.min(count, 100));
+      // Force pure black background
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(0, 0, width, height);
 
-      particles = [];
-      for (let i = 0; i < clampedCount; i++) {
-        particles.push({
-          x: Math.random() * width,
-          y: Math.random() * height,
-          vx: (Math.random() - 0.5) * 0.45,
-          vy: (Math.random() - 0.5) * 0.45,
-          radius: Math.random() * 1.6 + 0.8,
-          baseAlpha: Math.random() * 0.5 + 0.35,
-          twinkleSpeed: Math.random() * 0.02 + 0.01,
-          twinkleOffset: Math.random() * Math.PI * 2,
-        });
-      }
+      initColumns();
     };
 
     handleResize();
     window.addEventListener('resize', handleResize);
 
-    // Subtle mouse cursor attraction and connection
-    let mouseX = -1000;
-    let mouseY = -1000;
     const handleMouseMove = (e: MouseEvent) => {
       mouseX = e.clientX;
       mouseY = e.clientY;
@@ -69,81 +90,103 @@ export const ParticleConstellation: React.FC = () => {
     window.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseleave', handleMouseLeave);
 
-    let time = 0;
-    const maxConnectionDistance = 135;
+    let lastTime = 0;
+    const fps = 36;
+    const interval = 1000 / fps;
+    let globalPhase = 0;
 
-    const animate = () => {
-      time += 0.02;
-      ctx.clearRect(0, 0, width, height);
+    const render = (currentTime: number) => {
+      animationFrameId = requestAnimationFrame(render);
 
-      // Update particle positions
-      for (let i = 0; i < particles.length; i++) {
-        const p = particles[i];
-        p.x += p.vx;
-        p.y += p.vy;
+      const delta = currentTime - lastTime;
+      if (delta < interval) return;
+      lastTime = currentTime - (delta % interval);
 
-        // Wrap around boundaries
-        if (p.x < -10) p.x = width + 10;
-        else if (p.x > width + 10) p.x = -10;
-        if (p.y < -10) p.y = height + 10;
-        else if (p.y > height + 10) p.y = -10;
+      globalPhase += 0.035;
 
-        // Draw faint connecting constellation lines between nearby particles
-        for (let j = i + 1; j < particles.length; j++) {
-          const p2 = particles[j];
-          const dx = p.x - p2.x;
-          const dy = p.y - p2.y;
-          const distSq = dx * dx + dy * dy;
+      // Semi-transparent black overlay for decaying matrix trails on pure black
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.08)';
+      ctx.fillRect(0, 0, width, height);
 
-          if (distSq < maxConnectionDistance * maxConnectionDistance) {
-            const dist = Math.sqrt(distSq);
-            const lineAlpha = (1 - dist / maxConnectionDistance) * 0.22;
-            ctx.beginPath();
-            ctx.strokeStyle = `rgba(56, 189, 248, ${lineAlpha})`;
-            ctx.lineWidth = 0.85;
-            ctx.moveTo(p.x, p.y);
-            ctx.lineTo(p2.x, p2.y);
-            ctx.stroke();
+      ctx.font = 'bold 15px "JetBrains Mono", monospace';
+      ctx.textAlign = 'center';
+
+      for (let i = 0; i < columns.length; i++) {
+        const col = columns[i];
+        col.y += col.speed;
+
+        // Mouse proximity interaction: slight acceleration and glowing burst
+        const distToMouse = Math.abs(col.x - mouseX);
+        const isNearMouse = distToMouse < 90 && Math.abs(col.y * fontSize - mouseY) < 120;
+
+        // Occasional glyph change inside the column for authentic matrix flicker
+        if (Math.random() < 0.08) {
+          const randIdx = Math.floor(Math.random() * col.chars.length);
+          col.chars[randIdx] = MATRIX_CHARS[Math.floor(Math.random() * MATRIX_CHARS.length)];
+        }
+
+        const headY = Math.floor(col.y);
+        const charX = col.x + fontSize / 2;
+
+        // Draw trail of characters
+        for (let j = 0; j < col.length; j++) {
+          const charRow = headY - j;
+          const charY = charRow * fontSize;
+
+          if (charY < -fontSize || charY > height + fontSize) continue;
+
+          const char = col.chars[Math.abs(charRow) % col.chars.length];
+
+          if (j === 0) {
+            // Head character: blazing white / electric cyan highlight
+            ctx.shadowColor = '#00f0ff';
+            ctx.shadowBlur = 10;
+            ctx.fillStyle = isNearMouse ? '#ffffff' : '#e0ffff';
+            ctx.fillText(char, charX, charY);
+            ctx.shadowBlur = 0;
+          } else {
+            // Trailing characters: smoothly cycle and shift through Ocean Aurora palette
+            // (brilliant cyans #00f0ff, deep sky blues #00a8ff, vibrant mint greens #39ff14, soft teal #20b2aa)
+            const colorProgress =
+              (globalPhase + col.colorOffset + (j / col.length) * 2.5) % AURORA_COLORS.length;
+            const colorIdx = Math.floor(colorProgress);
+            const nextColorIdx = (colorIdx + 1) % AURORA_COLORS.length;
+            const chosenColor =
+              Math.random() < 0.15
+                ? AURORA_COLORS[Math.floor(Math.random() * AURORA_COLORS.length)]
+                : AURORA_COLORS[colorIdx];
+
+            // Fading alpha along the tail
+            const fadeAlpha = Math.max(0.08, 1 - (j / col.length) * 0.95);
+
+            ctx.globalAlpha = isNearMouse ? Math.min(1, fadeAlpha * 1.6) : fadeAlpha;
+            ctx.fillStyle = isNearMouse ? '#39ff14' : chosenColor;
+
+            // Subtle glow for upper trail characters
+            if (j < 4) {
+              ctx.shadowColor = chosenColor;
+              ctx.shadowBlur = 6;
+            } else {
+              ctx.shadowBlur = 0;
+            }
+
+            ctx.fillText(char, charX, charY);
+            ctx.shadowBlur = 0;
+            ctx.globalAlpha = 1.0;
           }
         }
 
-        // Draw connecting line to mouse pointer if close
-        if (mouseX > 0 && mouseY > 0) {
-          const mdx = p.x - mouseX;
-          const mdy = p.y - mouseY;
-          const mDistSq = mdx * mdx + mdy * mdy;
-          const mouseMaxDist = 160;
-          if (mDistSq < mouseMaxDist * mouseMaxDist) {
-            const mDist = Math.sqrt(mDistSq);
-            const mAlpha = (1 - mDist / mouseMaxDist) * 0.35;
-            ctx.beginPath();
-            ctx.strokeStyle = `rgba(165, 243, 252, ${mAlpha})`;
-            ctx.lineWidth = 1;
-            ctx.moveTo(p.x, p.y);
-            ctx.lineTo(mouseX, mouseY);
-            ctx.stroke();
-          }
+        // Reset column to top once past bottom with random delay
+        if (col.y * fontSize > height && Math.random() > 0.96) {
+          col.y = Math.floor(Math.random() * -15);
+          col.speed = Math.random() * 0.4 + 0.65;
+          col.length = Math.floor(Math.random() * 20) + 12;
+          col.colorOffset = (col.colorOffset + 1) % AURORA_COLORS.length;
         }
-
-        // Render particle dot with soft glow & twinkle
-        const alpha = Math.max(
-          0.15,
-          Math.min(1, p.baseAlpha + Math.sin(time * p.twinkleSpeed * 10 + p.twinkleOffset) * 0.22)
-        );
-
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(186, 230, 253, ${alpha})`;
-        ctx.shadowColor = '#38bdf8';
-        ctx.shadowBlur = 4;
-        ctx.fill();
-        ctx.shadowBlur = 0;
       }
-
-      animationFrameId = requestAnimationFrame(animate);
     };
 
-    animate();
+    animationFrameId = requestAnimationFrame(render);
 
     return () => {
       cancelAnimationFrame(animationFrameId);
@@ -161,7 +204,10 @@ export const ParticleConstellation: React.FC = () => {
         zIndex: -1,
         width: '100vw',
         height: '100vh',
+        backgroundColor: '#000000',
       }}
     />
   );
 };
+
+export const MatrixDigitalRain = ParticleConstellation;
